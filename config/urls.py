@@ -6,12 +6,14 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from apps.common import views_health
 from apps.events.views import event_checkin
 from apps.admin_dashboard.views import checkins_simple_page
 
 urlpatterns = [
+    path("health/live/", views_health.health_live),
+    path("health/ready/", views_health.health_ready),
     path("admin/", admin.site.urls),
-    path("ckeditor/", include("ckeditor_uploader.urls")),
     # QR check-in: сканер на телефоне открывает эту ссылку
     path("checkin/<str:token>/", event_checkin, name="event-checkin"),
     path("api/auth/", include("apps.users.urls")),

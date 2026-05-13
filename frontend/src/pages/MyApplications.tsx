@@ -46,7 +46,21 @@ export default function MyApplications() {
   };
 
   useEffect(() => { if (endRef.current) { const container = endRef.current.parentElement; if (container) container.scrollTop = container.scrollHeight; } }, [msgs]);
-  useEffect(() => { if (!roomId) return; const iv = setInterval(async () => { try { const r = await apiFetch(`/api/chat/rooms/${roomId}/messages/`); if (r.ok) setMsgs((await r.json()).results || []); } catch {} }, 5000); return () => clearInterval(iv); }, [roomId]);
+  useEffect(() => {
+    if (!roomId) return;
+    const poll = async () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      try {
+        const r = await apiFetch(`/api/chat/rooms/${roomId}/messages/`);
+        if (r.ok) setMsgs((await r.json()).results || []);
+      } catch {
+        /* ignore transient network errors */
+      }
+    };
+    const iv = setInterval(poll, 5000);
+    void poll();
+    return () => clearInterval(iv);
+  }, [roomId]);
 
   useEffect(() => { if (roomId) document.body.style.overflow = 'hidden'; else document.body.style.overflow = ''; return () => { document.body.style.overflow = ''; }; }, [roomId]);
 

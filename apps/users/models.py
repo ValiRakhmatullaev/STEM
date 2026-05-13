@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.common.models import TimeStampedModel
+from apps.common.validators import validate_image_upload, validate_pdf_upload
 
 
 class User(AbstractUser, TimeStampedModel):
@@ -25,6 +26,7 @@ class User(AbstractUser, TimeStampedModel):
         upload_to="users/profiles/%Y/%m/",
         blank=True,
         null=True,
+        validators=[validate_image_upload],
     )
     bio = models.TextField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
@@ -42,6 +44,7 @@ class User(AbstractUser, TimeStampedModel):
         upload_to="users/cv/%Y/%m/",
         blank=True,
         null=True,
+        validators=[validate_pdf_upload],
         help_text="Резюме / CV участника (PDF).",
     )
     is_company_user = models.BooleanField(
@@ -107,6 +110,15 @@ class User(AbstractUser, TimeStampedModel):
         return self.profile_photo
 
     def has_complete_profile(self) -> bool:
+        if not (self.first_name and self.last_name and self.email):
+            return False
+        if self.age is None or not (self.city or "").strip() or not (self.phone or "").strip():
+            return False
+        if not self.education_status:
+            return False
+        if self.education_status in (self.EDUCATION_STUDENT, self.EDUCATION_GRADUATE):
+            if not (self.university or "").strip():
+                return False
         return True
 
     def record_login(self) -> None:

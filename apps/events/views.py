@@ -2,11 +2,9 @@
 API: список, детали, запись и отметка посещаемости мероприятий.
 """
 
-from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
-from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404
@@ -14,10 +12,13 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape
 from django.views.decorators.http import require_GET, require_http_methods
+from django_ratelimit.decorators import ratelimit
 
+from apps.common.audit import record_audit_event
 from apps.common.utils import paginate_queryset
 from .models import Event, EventRegistration
 from .models import RegistrationStatus
+from .services import cancel_event_registration, check_in_registration, register_user_for_event
 from .utils import sync_event_counters
 
 User = get_user_model()
@@ -98,6 +99,8 @@ def event_list(request):
     return JsonResponse({"results": data, "pagination": meta})
 
 
+@ratelimit(key="ip", rate="600/h", method="GET")
+@ratelimit(key="ip", rate="200/m", method="POST")
 @require_http_methods(["GET", "POST"])
 def event_checkin(request, token: str):
     """
@@ -200,47 +203,28 @@ def event_checkin(request, token: str):
     # Time window restriction removed:
     # check-in is protected by checker authentication and permissions.
 
-    # защита от refresh
     if registration.checked_in:
         time_str = registration.checked_in_at.strftime("%d.%m.%Y %H:%M")
         return HttpResponse(
             f"""
             <html>
             <body>
-            <h2>Участник уже отмечен</h2>
-            <p>Отметка: {time_str}</p>
+            <h2>Participant already checked in</h2>
+            <p>Checked in at: {time_str}</p>
             </body>
             </html>
             """
         )
 
-    # фиксируем посещение
-    registration.checked_in = True
-    registration.checked_in_at = now
-    registration.visits_count += 1
-    registration.last_visit_at = now
-
-    registration.save(
-        update_fields=[
-            "checked_in",
-            "checked_in_at",
-            "visits_count",
-            "last_visit_at",
-        ]
-    )
-
+    registration, _changed = check_in_registration(registration_id=registration.pk, checker_user=checker_user)
     user = registration.user
-
-    # Авто-верификация: если участник посетил >= 3 мероприятий — ставим is_verified
-    if not user.is_verified:
-        total_checkins = EventRegistration.objects.filter(
-            user=user,
-            checked_in=True,
-        ).count()
-        if total_checkins >= 3:
-            user.is_verified = True
-            user.verified_at = now
-            user.save(update_fields=["is_verified", "verified_at"])
+    record_audit_event(
+        request,
+        "event.checkin",
+        target_type="event_registration",
+        target_id=registration.pk,
+        metadata={"event_id": event.pk, "participant_id": user.pk, "checker_id": checker_user.pk},
+    )
 
     participant_name = escape(
         user.get_full_name() or user.username or user.email or "Участник"
@@ -444,41 +428,23 @@ def event_register(request, pk):
                 status=409,
             )
 
-        with transaction.atomic():
-            current_registered = (
-                EventRegistration.objects
-                .select_for_update()
-                .filter(
-                    event=event,
-                    status=RegistrationStatus.REGISTERED,
-                    is_waitlist=False,
-                )
-                .count()
-            )
-            is_waitlist = current_registered >= event.capacity
-
-            if reg and reg.status == RegistrationStatus.CANCELLED:
-                reg.status = RegistrationStatus.REGISTERED
-                reg.is_waitlist = is_waitlist
-                reg.cancelled_at = None
-                reg.save()
-
-            else:
-                reg = EventRegistration.objects.create(
-                    event=event,
-                    user=request.user,
-                    status=RegistrationStatus.REGISTERED,
-                    is_waitlist=is_waitlist,
-                )
-                # Sync to Google Sheets; failure must not block registration.
-                try:
-                    from services.google_sheets import add_registration_row
-                    add_registration_row(event, request.user)
-                except Exception as e:
-                    import logging
-                    logging.getLogger(__name__).exception("Google Sheets sync failed: %s", e)
-
-        sync_event_counters(event)
+        result = register_user_for_event(event_id=event.pk, user=request.user)
+        reg = result.registration
+        is_waitlist = result.is_waitlist
+        record_audit_event(
+            request,
+            "event.register",
+            target_type="event",
+            target_id=event.pk,
+            metadata={"registration_id": reg.pk, "is_waitlist": is_waitlist},
+        )
+        if result.created:
+            try:
+                from services.google_sheets import add_registration_row
+                add_registration_row(event, request.user)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).exception("Google Sheets sync failed: %s", e)
 
         try:
             from apps.notifications.services import create_notification
@@ -506,11 +472,8 @@ def event_register(request, pk):
                 status=400,
             )
 
-        reg.status = RegistrationStatus.CANCELLED
-        reg.cancelled_at = timezone.now()
-
-        reg.save(update_fields=["status", "cancelled_at"])
-
-        sync_event_counters(event)
+        if not cancel_event_registration(event_id=event.pk, user=request.user):
+            return JsonResponse({"error": "Registration not found."}, status=400)
+        record_audit_event(request, "event.cancel_registration", target_type="event", target_id=event.pk)
 
         return JsonResponse({"success": True})

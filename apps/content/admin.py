@@ -1,14 +1,13 @@
 from django import forms
 from django.contrib import admin
 from django.utils import timezone
-from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 from .models import HomeBanner, NewsItem
 
 
 class NewsItemAdminForm(forms.ModelForm):
     """Форма с богатым редактором для поля «Полный текст»: шрифт, размер, картинки в тексте."""
-    content = forms.CharField(widget=CKEditorUploadingWidget(), required=False)
+    content = forms.CharField(widget=forms.Textarea(attrs={"rows": 14}), required=False)
 
     class Meta:
         model = NewsItem

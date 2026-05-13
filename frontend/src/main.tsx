@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import CheckinsLite from "./pages/CheckinsLite";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { LanguageProvider } from "./context/LanguageContext";
 import "./index.css";
 
@@ -32,7 +33,9 @@ if (isCheckinsMode) {
         <AuthProvider>
           <LanguageProvider>
             <Suspense fallback={<div style={{ padding: 24 }}>Loading...</div>}>
-              <App />
+              <ErrorBoundary>
+                <App />
+              </ErrorBoundary>
             </Suspense>
           </LanguageProvider>
         </AuthProvider>

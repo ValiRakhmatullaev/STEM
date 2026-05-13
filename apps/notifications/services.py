@@ -1,7 +1,7 @@
 """
 Helper to create notifications for users (event registration, job application, etc.).
 """
-from apps.notifications.models import Notification, NotificationType
+from apps.notifications.models import Notification
 
 
 def create_notification(user, notification_type: str, title: str, message: str, link: str = ""):

@@ -11,6 +11,7 @@ from django.views.decorators.http import require_GET, require_http_methods
 from django.utils import timezone
 
 from apps.companies.models import Company
+from apps.common.audit import record_audit_event
 from apps.events.models import Event, EventRegistration
 from apps.events.models import RegistrationStatus
 from apps.events.utils import sync_event_counters
@@ -48,17 +49,34 @@ def admin_users(request):
     from django.db.models import Q
     search = (request.GET.get("search") or "").strip()
     if search:
-        qs = User.objects.filter(
-            Q(username__icontains=search)
-            | Q(email__icontains=search)
-            | Q(first_name__icontains=search)
-            | Q(last_name__icontains=search)
-        ).order_by("-date_joined")
+        qs = (
+            User.objects.filter(
+                Q(username__icontains=search)
+                | Q(email__icontains=search)
+                | Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+            )
+            .annotate(
+                total_checkins=Count(
+                    "event_registrations",
+                    filter=Q(event_registrations__checked_in=True),
+                )
+            )
+            .order_by("-date_joined")
+        )
     else:
-        qs = User.objects.all().order_by("-date_joined")
+        qs = (
+            User.objects.all()
+            .annotate(
+                total_checkins=Count(
+                    "event_registrations",
+                    filter=Q(event_registrations__checked_in=True),
+                )
+            )
+            .order_by("-date_joined")
+        )
     users = []
     for u in qs[:500]:
-        total_checkins = EventRegistration.objects.filter(user=u, checked_in=True).count()
         users.append({
             "id": u.pk,
             "username": u.username,
@@ -70,7 +88,7 @@ def admin_users(request):
             "is_staff": u.is_staff,
             "is_active": u.is_active,
             "is_verified": u.is_verified,
-            "total_checkins": total_checkins,
+            "total_checkins": int(getattr(u, "total_checkins", 0) or 0),
             "has_cv": bool(u.cv_file),
             "date_joined": u.date_joined.isoformat() if u.date_joined else None,
         })
@@ -273,6 +291,7 @@ def admin_checkins(request):
     err = _require_staff_or_presence_checker(request)
     if err:
         return err
+    record_audit_event(request, "admin.view_checkins", target_type="event", target_id=request.GET.get("event_id", ""))
 
     event_id = (request.GET.get("event_id") or "").strip()
 
@@ -322,6 +341,7 @@ def admin_users_without_event_registrations(request):
     err = _require_staff_or_presence_checker(request)
     if err:
         return err
+    record_audit_event(request, "admin.view_presence_users_without_registrations")
 
     registered_user_ids = EventRegistration.objects.filter(
         status=RegistrationStatus.REGISTERED
@@ -362,6 +382,7 @@ def admin_all_users_for_presence_checker(request):
     err = _require_staff_or_presence_checker(request)
     if err:
         return err
+    record_audit_event(request, "admin.view_presence_users", metadata={"search": bool(request.GET.get("search"))})
 
     search = (request.GET.get("search") or "").strip()
 
@@ -412,8 +433,6 @@ def admin_all_users_for_presence_checker(request):
                 "registered_events_count": reg_count,
                 "registered_for_any_event": reg_count > 0,
                 "total_checkins": int(getattr(u, "total_checkins", 0) or 0),
-                "profile_photo": request.build_absolute_uri(u.profile_photo.url) if u.profile_photo else None,
-                "cv_file": request.build_absolute_uri(u.cv_file.url) if u.cv_file else None,
                 "date_joined": u.date_joined.isoformat() if u.date_joined else None,
             }
         )
@@ -486,6 +505,7 @@ def admin_user_detail(request, user_id: int):
     u = User.objects.filter(pk=user_id).first()
     if not u:
         return JsonResponse({"error": "Пользователь не найден."}, status=404)
+    record_audit_event(request, "admin.view_user_detail", target_type="user", target_id=u.pk)
 
     total_checkins = EventRegistration.objects.filter(user=u, checked_in=True).count()
 
@@ -536,13 +556,19 @@ def admin_company_approve_talents(request, company_id: int):
     company = Company.objects.filter(pk=company_id).first()
     if not company:
         return JsonResponse({"error": "Компания не найдена."}, status=404)
-
     try:
         body = json.loads(request.body)
     except (json.JSONDecodeError, TypeError):
         body = {}
 
     approve = body.get("approve", True)
+    record_audit_event(
+        request,
+        "admin.update_company_talent_access",
+        target_type="company",
+        target_id=company.pk,
+        metadata={"approve": approve},
+    )
 
     if approve:
         company.is_approved_for_talents = True
@@ -645,11 +671,10 @@ def checkins_simple_page(request):
     </div>
   </div>
 
-  <script src="https://unpkg.com/html5-qrcode" defer></script>
   <script>
     const $ = (id) => document.getElementById(id);
     function getCsrf() {
-      const m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/);
+      const m = document.cookie.match(/(?:^|;\\s*)csrftoken=([^;]*)/);
       return m ? decodeURIComponent(m[1]) : '';
     }
     async function ensureCsrf() {
@@ -812,36 +837,7 @@ def checkins_simple_page(request):
           return;
         }
 
-        // Fallback for browsers without BarcodeDetector (Safari, etc.)
-        if (typeof Html5Qrcode === 'undefined') {
-          msg('QR scanner not supported in this browser.');
-          return;
-        }
-        const v = $("cam");
-        const box = $("scanBox");
-        v.style.display = 'none';
-        box.style.display = 'block';
-        box.innerHTML = "";
-        html5Qr = new Html5Qrcode("scanBox");
-        scanning = true;
-        $("scanStatus").textContent = 'Scanner running (fallback)...';
-        await html5Qr.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: 250 },
-          (decodedText) => {
-            const raw = (decodedText || "").trim();
-            if (raw) {
-              const target = normalizeCheckinUrl(raw);
-              $("scanStatus").textContent = 'QR detected, opening check-in...';
-              if (!target) {
-                msg('Scanned QR is empty/invalid');
-                return;
-              }
-              window.location.href = target;
-            }
-          },
-          () => {}
-        );
+        msg('QR scanner is not supported in this browser. Use Chrome/Edge with BarcodeDetector support.');
       } catch (e) {
         $("scanStatus").textContent = 'Scanner failed';
         msg((e && e.message) ? e.message : 'Camera error');

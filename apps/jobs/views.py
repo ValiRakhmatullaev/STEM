@@ -1,12 +1,32 @@
 """
 API: отклик на вакансию (резюме + сопроводительное письмо).
 """
+from __future__ import annotations
+
+from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET, require_http_methods
 
+from apps.chat.models import ChatMessage, InterviewInvite, InterviewStatus
 from apps.companies.models import JobPosting
 from .models import JobApplication
+
+_MAX_RESUME_BYTES = 5 * 1024 * 1024
+
+
+def _validate_resume_upload(upload) -> str | None:
+    if upload.size > _MAX_RESUME_BYTES:
+        return "Файл резюме слишком большой (максимум 5 МБ)."
+    name = (getattr(upload, "name", "") or "").lower()
+    if not name.endswith(".pdf"):
+        return "Допускается только файл в формате PDF."
+    head = upload.read(5)
+    if hasattr(upload, "seek"):
+        upload.seek(0)
+    if not head.startswith(b"%PDF"):
+        return "Содержимое файла не похоже на PDF."
+    return None
 
 
 @require_http_methods(["GET", "POST"])
@@ -35,6 +55,12 @@ def job_apply(request, job_id):
         return JsonResponse({"error": "Вы уже откликались на эту вакансию"}, status=409)
     cover_letter = (request.POST.get("cover_letter") or "").strip()
     resume_file = request.FILES.get("resume")
+    if not resume_file:
+        return JsonResponse({"error": "Прикрепите резюме в формате PDF."}, status=400)
+    err = _validate_resume_upload(resume_file)
+    if err:
+        return JsonResponse({"error": err}, status=400)
+
     app = JobApplication.objects.create(
         job=job,
         applicant=request.user,
@@ -47,6 +73,7 @@ def job_apply(request, job_id):
     try:
         from apps.notifications.services import create_notification
         from apps.notifications.models import NotificationType
+
         create_notification(
             request.user,
             NotificationType.JOB,
@@ -71,11 +98,40 @@ def my_applications(request):
 
     apps = (
         JobApplication.objects.filter(applicant=request.user)
-        .select_related("job__company")
+        .select_related("job__company", "chat_room")
         .order_by("-applied_at")
     )
+    app_list = list(apps)
+    room_ids = [a.chat_room.pk for a in app_list if getattr(a, "chat_room", None)]
+
+    unread_map: dict[int, int] = {}
+    interview_map: dict[int, InterviewInvite] = {}
+    if room_ids:
+        unread_map = {
+            row["room_id"]: row["c"]
+            for row in (
+                ChatMessage.objects.filter(room_id__in=room_ids, is_read=False)
+                .exclude(sender=request.user)
+                .values("room_id")
+                .annotate(c=Count("id"))
+            )
+        }
+        seen_rooms: set[int] = set()
+        for inv in (
+            InterviewInvite.objects.filter(
+                room_id__in=room_ids,
+                status__in=[InterviewStatus.PENDING, InterviewStatus.ACCEPTED],
+            )
+            .select_related("room")
+            .order_by("room_id", "scheduled_at")
+        ):
+            if inv.room_id in seen_rooms:
+                continue
+            seen_rooms.add(inv.room_id)
+            interview_map[inv.room_id] = inv
+
     data = []
-    for a in apps:
+    for a in app_list:
         item = {
             "id": a.pk,
             "status": a.status,
@@ -90,28 +146,20 @@ def my_applications(request):
             "chat_room_id": None,
             "interview": None,
         }
-        # Check for chat room
-        try:
-            from apps.chat.models import ChatRoom, InterviewInvite, InterviewStatus
-            room = ChatRoom.objects.filter(application=a, is_active=True).first()
-            if room:
-                item["chat_room_id"] = room.pk
-                unread = room.messages.filter(is_read=False).exclude(sender=request.user).count()
-                item["unread_messages"] = unread
-                upcoming = room.interviews.filter(
-                    status__in=[InterviewStatus.PENDING, InterviewStatus.ACCEPTED]
-                ).order_by("scheduled_at").first()
-                if upcoming:
-                    item["interview"] = {
-                        "id": upcoming.pk,
-                        "scheduled_at": upcoming.scheduled_at.isoformat(),
-                        "duration_minutes": upcoming.duration_minutes,
-                        "format": upcoming.format,
-                        "location": upcoming.location,
-                        "note": upcoming.note,
-                        "status": upcoming.status,
-                    }
-        except Exception:
-            pass
+        room = getattr(a, "chat_room", None)
+        if room:
+            item["chat_room_id"] = room.pk
+            item["unread_messages"] = unread_map.get(room.pk, 0)
+            upcoming = interview_map.get(room.pk)
+            if upcoming:
+                item["interview"] = {
+                    "id": upcoming.pk,
+                    "scheduled_at": upcoming.scheduled_at.isoformat(),
+                    "duration_minutes": upcoming.duration_minutes,
+                    "format": upcoming.format,
+                    "location": upcoming.location,
+                    "note": upcoming.note,
+                    "status": upcoming.status,
+                }
         data.append(item)
     return JsonResponse({"results": data})

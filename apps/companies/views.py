@@ -7,14 +7,15 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.text import slugify
 from django.views.decorators.http import require_GET, require_http_methods
 
+from apps.common.audit import record_audit_event
 from apps.common.utils import paginate_queryset
-from apps.events.models import EventRegistration
 from apps.jobs.models import JobApplication, ApplicationStatus
 from .models import Company, CompanyUser, CompanyUserRole, JobPosting
 
@@ -330,16 +331,29 @@ def company_verified_participants(request):
             "pending_approval": True,
         }, status=403)
 
+    record_audit_event(
+        request,
+        "company.view_verified_talents",
+        target_type="company",
+        target_id=membership.company_id,
+        metadata={"company_user_id": request.user.pk},
+    )
+
     verified_users = (
         User.objects.filter(is_verified=True, is_active=True, is_company_user=False)
         .exclude(is_staff=True)
         .exclude(is_superuser=True)
+        .annotate(
+            total_checkins=Count(
+                "event_registrations",
+                filter=Q(event_registrations__checked_in=True),
+            )
+        )
         .order_by("first_name", "last_name")
     )
 
     participants = []
     for u in verified_users[:500]:
-        total_checkins = EventRegistration.objects.filter(user=u, checked_in=True).count()
         participants.append({
             "id": u.pk,
             "first_name": u.first_name or "",
@@ -351,7 +365,7 @@ def company_verified_participants(request):
             "education_status": u.education_status or "",
             "university": u.university or "",
             "bio": u.bio or "",
-            "total_checkins": total_checkins,
+            "total_checkins": int(getattr(u, "total_checkins", 0) or 0),
             "cv_file": request.build_absolute_uri(u.cv_file.url) if u.cv_file else None,
             "profile_photo": request.build_absolute_uri(u.profile_photo.url) if u.profile_photo else None,
         })
@@ -388,12 +402,14 @@ def company_my_jobs(request):
     company = membership.company
     jobs = (
         JobPosting.objects.filter(company=company)
+        .annotate(
+            _apps_total=Count("applications"),
+            _apps_new=Count("applications", filter=Q(applications__status=ApplicationStatus.NEW)),
+        )
         .order_by("-created_at")
     )
     data = []
     for j in jobs:
-        applications_count = JobApplication.objects.filter(job=j).count()
-        new_count = JobApplication.objects.filter(job=j, status=ApplicationStatus.NEW).count()
         data.append({
             "id": j.pk,
             "title": j.title,
@@ -406,8 +422,8 @@ def company_my_jobs(request):
             "salary_max": str(j.salary_max) if j.salary_max else None,
             "is_active": j.is_active,
             "published_at": (j.published_at or j.created_at).isoformat() if (j.published_at or j.created_at) else None,
-            "applications_count": applications_count,
-            "new_applications": new_count,
+            "applications_count": int(getattr(j, "_apps_total", 0) or 0),
+            "new_applications": int(getattr(j, "_apps_new", 0) or 0),
         })
     return JsonResponse({"results": data})
 

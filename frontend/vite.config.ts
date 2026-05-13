@@ -11,6 +11,10 @@ export default defineConfig({
       "/api": { target: "http://127.0.0.1:8000", changeOrigin: true },
       "/admin": { target: "http://127.0.0.1:8000", changeOrigin: true },
       "/media": { target: "http://127.0.0.1:8000", changeOrigin: true },
+      "/checkin": { target: "http://127.0.0.1:8000", changeOrigin: true },
+      "/checkins-simple": { target: "http://127.0.0.1:8000", changeOrigin: true },
+      "/health": { target: "http://127.0.0.1:8000", changeOrigin: true },
+      "/ckeditor": { target: "http://127.0.0.1:8000", changeOrigin: true },
     },
   },
 });

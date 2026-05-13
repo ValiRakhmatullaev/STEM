@@ -1,58 +1,35 @@
+import { lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 import Layout from "./layout/Layout";
 import RequireAuth from "./components/RequireAuth";
 
-// Главная
-import Home from "./pages/Home";
-
-// Мероприятия
-import Events from "./pages/Events";
-import EventDetail from "./pages/EventDetail";
-import EventTicket from "./pages/EventTicket";
-import MyEvents from "./pages/MyEvents";
-
-// Вакансии
-import Jobs from "./pages/Jobs";
-import JobDetail from "./pages/JobDetail";
-import MyApplications from "./pages/MyApplications";
-
-// Компании
-import Companies from "./pages/Companies";
-import CompanyDetail from "./pages/CompanyDetail";
-
-// Карьерные ярмарки
-import CareerFairs from "./pages/CareerFairs";
-import CareerFairDetail from "./pages/CareerFairDetail";
-
-// Новости
-import News from "./pages/News";
-import NewsDetail from "./pages/NewsDetail";
-
-// FAQ
-import Faq from "./pages/Faq";
-
-// Контакты
-import Contacts from "./pages/Contacts";
-import About from "./pages/About";
-
-// Админ-панель
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminCheckins from "./pages/AdminCheckins";
-import CheckinsLite from "./pages/CheckinsLite";
-
-// Presence checker
-import PresenceChecker from "./pages/PresenceChecker";
-import Participants from "./pages/Participants";
-
-// Компании (аккаунт)
-import CompanyRegister from "./pages/CompanyRegister";
-import CompanyDashboard from "./pages/CompanyDashboard";
-
-// Авторизация (без Layout)
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import NotFound from "./pages/NotFound";
-
+const Home = lazy(() => import("./pages/Home"));
+const Events = lazy(() => import("./pages/Events"));
+const EventDetail = lazy(() => import("./pages/EventDetail"));
+const EventTicket = lazy(() => import("./pages/EventTicket"));
+const MyEvents = lazy(() => import("./pages/MyEvents"));
+const Jobs = lazy(() => import("./pages/Jobs"));
+const JobDetail = lazy(() => import("./pages/JobDetail"));
+const MyApplications = lazy(() => import("./pages/MyApplications"));
+const Companies = lazy(() => import("./pages/Companies"));
+const CompanyDetail = lazy(() => import("./pages/CompanyDetail"));
+const CareerFairs = lazy(() => import("./pages/CareerFairs"));
+const CareerFairDetail = lazy(() => import("./pages/CareerFairDetail"));
+const News = lazy(() => import("./pages/News"));
+const NewsDetail = lazy(() => import("./pages/NewsDetail"));
+const Faq = lazy(() => import("./pages/Faq"));
+const Contacts = lazy(() => import("./pages/Contacts"));
+const About = lazy(() => import("./pages/About"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminCheckins = lazy(() => import("./pages/AdminCheckins"));
+const CheckinsLite = lazy(() => import("./pages/CheckinsLite"));
+const PresenceChecker = lazy(() => import("./pages/PresenceChecker"));
+const Participants = lazy(() => import("./pages/Participants"));
+const CompanyRegister = lazy(() => import("./pages/CompanyRegister"));
+const CompanyDashboard = lazy(() => import("./pages/CompanyDashboard"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 function App() {
   return (
     <Routes>

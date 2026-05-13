@@ -10,12 +10,14 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods, require_GET
+from django_ratelimit.decorators import ratelimit
 
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
 
+@ratelimit(key="ip", rate="30/h", method="POST")
 @require_http_methods(["POST"])
 def register(request):
     """
@@ -138,6 +140,7 @@ def register(request):
     )
 
 
+@ratelimit(key="ip", rate="40/m", method="POST")
 @require_http_methods(["POST"])
 def login_view(request):
     """
@@ -212,6 +215,7 @@ def me(request):
     })
 
 
+@ratelimit(key="ip", rate="60/m", method="POST")
 @require_http_methods(["POST"])
 def logout_view(request):
     logout(request)

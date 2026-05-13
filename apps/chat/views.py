@@ -6,11 +6,8 @@ import json
 
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
 
-from apps.companies.models import CompanyUser
-from apps.jobs.models import JobApplication
 from .models import (
     ChatRoom,
     ChatMessage,
@@ -157,7 +154,7 @@ def chat_send(request, room_id):
             NotificationType.GENERAL,
             "Новое сообщение",
             f"{sender_name}: {text[:100]}",
-            link=f"/my-applications",
+            link="/my-applications",
         )
     except Exception:
         pass

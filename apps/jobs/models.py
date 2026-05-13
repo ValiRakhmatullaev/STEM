@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import models
 
 from apps.common.models import TimeStampedModel
+from apps.common.validators import validate_pdf_upload
 from apps.companies.models import JobPosting
 
 
@@ -34,6 +35,7 @@ class JobApplication(TimeStampedModel):
         upload_to="jobs/resumes/%Y/%m/",
         blank=True,
         null=True,
+        validators=[validate_pdf_upload],
     )
     status = models.CharField(
         max_length=20,

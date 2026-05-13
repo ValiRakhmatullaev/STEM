@@ -126,6 +126,12 @@ class EventRegistration(models.Model):
         verbose_name_plural = "Event registrations"
         ordering = ("-registered_at",)
         unique_together = [("user", "event")]
+        indexes = [
+            models.Index(fields=["user", "checked_in"], name="evreg_user_checked_in_idx"),
+            models.Index(fields=["event", "status", "is_waitlist"]),
+            models.Index(fields=["user", "status"]),
+            models.Index(fields=["checked_in", "checked_in_at"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.user_id} — {self.event.title} ({self.status})"
