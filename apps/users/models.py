@@ -55,6 +55,14 @@ class User(AbstractUser, TimeStampedModel):
     age = models.PositiveIntegerField(blank=True, null=True, help_text="Возраст")
     city = models.CharField(max_length=255, blank=True, help_text="Город")
 
+    personal_data_consent = models.BooleanField(
+        default=False,
+        help_text="User explicitly agreed to personal data processing during registration.",
+    )
+    personal_data_consent_at = models.DateTimeField(blank=True, null=True)
+    personal_data_consent_version = models.CharField(max_length=32, blank=True, default="")
+    personal_data_consent_ip = models.GenericIPAddressField(blank=True, null=True)
+
     EDUCATION_STUDENT = "student"
     EDUCATION_GRADUATE = "graduate"
     EDUCATION_NOT_STUDYING = "not_studying"

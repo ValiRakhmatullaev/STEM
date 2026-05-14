@@ -52,11 +52,19 @@ const InputField = ({
 export default function Register() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const personalDataConsentLabel =
+    t("register.personalDataConsent") === "register.personalDataConsent"
+      ? "Я согласна на обработку личных данных, которые я указала при регистрации."
+      : t("register.personalDataConsent");
+  const personalDataConsentError =
+    t("register.errorPersonalDataConsent") === "register.errorPersonalDataConsent"
+      ? "Нужно согласие на обработку личных данных"
+      : t("register.errorPersonalDataConsent");
   const [step, setStep] = useState<1 | 2>(1);
   const [formData, setFormData] = useState({
     username: "", first_name: "", last_name: "", age: "", city: "",
     phone: "", email: "", password: "", passwordConfirm: "",
-    education_status: "", university: "",
+    education_status: "", university: "", personal_data_consent: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -82,6 +90,7 @@ export default function Register() {
       if (!formData.education_status) newErrors.education_status = t("register.errorSelectStatus");
       if ((formData.education_status === "student" || formData.education_status === "graduate") && !formData.university.trim())
         newErrors.university = t("register.errorUniversity");
+      if (!formData.personal_data_consent) newErrors.personal_data_consent = personalDataConsentError;
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -108,6 +117,7 @@ export default function Register() {
           first_name: formData.first_name, last_name: formData.last_name, age: formData.age,
           city: formData.city, phone: formData.phone, education_status: formData.education_status,
           university: formData.university || undefined,
+          personal_data_consent: formData.personal_data_consent,
         }),
       });
       if (!response.ok) {
@@ -133,7 +143,8 @@ export default function Register() {
     !!formData.city.trim() && formData.phone.replace(/\D/g, "").length >= 7;
 
   const canSubmitStep2 = !!formData.education_status &&
-    ((formData.education_status === "student" || formData.education_status === "graduate") ? !!formData.university.trim() : true);
+    ((formData.education_status === "student" || formData.education_status === "graduate") ? !!formData.university.trim() : true) &&
+    formData.personal_data_consent;
 
   const canSubmit = step === 1 ? canSubmitStep1 : canSubmitStep2;
 
@@ -269,6 +280,23 @@ export default function Register() {
                         </motion.div>
                       )}
                     </AnimatePresence>
+
+                    <label
+                      className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm transition-colors
+                        ${errors.personal_data_consent ? "border-rose-300 bg-rose-50/60" : "border-slate-200 bg-slate-50/60"}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.personal_data_consent}
+                        onChange={(ev) => {
+                          setFormData(prev => ({ ...prev, personal_data_consent: ev.target.checked }));
+                          if (errors.personal_data_consent) setErrors(prev => ({ ...prev, personal_data_consent: "" }));
+                        }}
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-400"
+                      />
+                      <span className="leading-5 text-slate-600">{personalDataConsentLabel}</span>
+                    </label>
+                    {errors.personal_data_consent && <p className="text-xs text-rose-500 font-medium">{errors.personal_data_consent}</p>}
                   </motion.div>
                 )}
               </AnimatePresence>

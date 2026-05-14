@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.db import transaction
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
+from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods, require_GET
 from django_ratelimit.decorators import ratelimit
@@ -15,6 +16,22 @@ from django_ratelimit.decorators import ratelimit
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+PERSONAL_DATA_CONSENT_VERSION = "personal-data-v1"
+
+
+def _truthy(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return False
+
+
+def _client_ip(request) -> str | None:
+    forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if forwarded_for:
+        return forwarded_for.split(",", 1)[0].strip() or None
+    return request.META.get("REMOTE_ADDR")
 
 
 @ratelimit(key="ip", rate="30/h", method="POST")
@@ -32,7 +49,8 @@ def register(request):
       "city": "...",
       "phone": "...",
       "education_status": "student|graduate|not_studying",
-      "university": "..." (required if student/graduate)
+      "university": "..." (required if student/graduate),
+      "personal_data_consent": true
     }
     """
     try:
@@ -49,6 +67,7 @@ def register(request):
     phone = (data.get("phone") or "").strip()
     education_status = (data.get("education_status") or "").strip()
     university = (data.get("university") or "").strip()
+    personal_data_consent = _truthy(data.get("personal_data_consent"))
 
     age_raw = data.get("age")
     try:
@@ -87,6 +106,9 @@ def register(request):
     if len(password) < 8:
         field_errors["password"] = "Пароль минимум 8 символов."
 
+    if not personal_data_consent:
+        field_errors["personal_data_consent"] = "Consent to personal data processing is required."
+
     if education_status not in {
         getattr(User, "EDUCATION_STUDENT", "student"),
         getattr(User, "EDUCATION_GRADUATE", "graduate"),
@@ -120,6 +142,10 @@ def register(request):
                 city=city,
                 education_status=education_status,
                 university=university if education_status in {"student", "graduate"} else None,
+                personal_data_consent=True,
+                personal_data_consent_at=timezone.now(),
+                personal_data_consent_version=PERSONAL_DATA_CONSENT_VERSION,
+                personal_data_consent_ip=_client_ip(request),
             )
             user.set_password(password)
             user.save()
