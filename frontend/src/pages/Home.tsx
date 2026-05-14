@@ -334,6 +334,7 @@ export default function Home() {
   const [banner, setBanner] = useState<HomeBanner | null>(null);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const joinUrl = user ? "/events" : banner?.button_url || "/register";
 
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
@@ -503,7 +504,7 @@ export default function Home() {
               </motion.p>
 
               <motion.div variants={fadeInUp} className="mt-10 flex flex-wrap gap-4" style={{ transform: "translateZ(40px)" }}>
-                <GradientButton to={banner?.button_url || "/register"}>
+                <GradientButton to={joinUrl}>
                   {t("home.hero.join")}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </GradientButton>
@@ -944,7 +945,7 @@ export default function Home() {
               {t("home.cta.desc")}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <GradientButton to="/register">
+              <GradientButton to={user ? "/events" : "/register"}>
                 <Users className="w-5 h-5" />
                 {t("home.cta.participantButton")}
               </GradientButton>
