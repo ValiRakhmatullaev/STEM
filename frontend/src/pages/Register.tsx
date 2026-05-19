@@ -135,19 +135,6 @@ export default function Register() {
     }
   };
 
-  const canSubmitStep1 =
-    formData.username.length >= 3 && !!formData.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
-    formData.password.length >= 8 && formData.password === formData.passwordConfirm &&
-    !!formData.first_name.trim() && !!formData.last_name.trim() && !!formData.age &&
-    (() => { const n = Number(formData.age); return Number.isFinite(n) && n >= 10 && n <= 120; })() &&
-    !!formData.city.trim() && formData.phone.replace(/\D/g, "").length >= 7;
-
-  const canSubmitStep2 = !!formData.education_status &&
-    ((formData.education_status === "student" || formData.education_status === "graduate") ? !!formData.university.trim() : true) &&
-    formData.personal_data_consent;
-
-  const canSubmit = step === 1 ? canSubmitStep1 : canSubmitStep2;
-
   return (
     <div className="min-h-screen bg-[#fafaf9] flex items-center justify-center px-4 py-16">
       {/* Subtle background decoration */}
@@ -303,13 +290,13 @@ export default function Register() {
 
               <motion.button
                 type="submit"
-                disabled={!canSubmit || isLoading}
-                whileHover={{ scale: canSubmit && !isLoading ? 1.01 : 1 }}
-                whileTap={{ scale: canSubmit && !isLoading ? 0.99 : 1 }}
+                disabled={isLoading}
+                whileHover={{ scale: !isLoading ? 1.01 : 1 }}
+                whileTap={{ scale: !isLoading ? 0.99 : 1 }}
                 className={`mt-2 w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200
-                  ${canSubmit && !isLoading
+                  ${!isLoading
                     ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40"
-                    : "bg-slate-100 text-slate-400 cursor-not-allowed"}`}
+                    : "bg-slate-100 text-slate-400 cursor-wait"}`}
               >
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> {t("register.loading")}</>
