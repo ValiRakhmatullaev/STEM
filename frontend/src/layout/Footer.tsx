@@ -25,8 +25,8 @@ const footerLinks = {
     { key: "footer.faq", to: "/faq" },
   ],
   legal: [
-    { key: "footer.privacy", to: "/" },
-    { key: "footer.terms", to: "/" },
+    { key: "footer.privacy", to: "/privacy" },
+    { key: "footer.terms", to: "/terms" },
   ],
 };
 

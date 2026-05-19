@@ -20,6 +20,8 @@ const NewsDetail = lazy(() => import("./pages/NewsDetail"));
 const Faq = lazy(() => import("./pages/Faq"));
 const Contacts = lazy(() => import("./pages/Contacts"));
 const About = lazy(() => import("./pages/About"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminCheckins = lazy(() => import("./pages/AdminCheckins"));
 const CheckinsLite = lazy(() => import("./pages/CheckinsLite"));
@@ -64,6 +66,8 @@ function App() {
         <Route path="faq" element={<Faq />} />
         <Route path="contacts" element={<Contacts />} />
         <Route path="about" element={<About />} />
+        <Route path="privacy" element={<PrivacyPolicy />} />
+        <Route path="terms" element={<TermsOfUse />} />
 
         {/* Панель администратора (доступ по is_staff) */}
         <Route path="admin" element={<RequireAuth requireStaff><AdminDashboard /></RequireAuth>} />
