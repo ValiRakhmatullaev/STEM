@@ -188,11 +188,11 @@ export default function Footer() {
               <ul className="space-y-3">
                 <li>
                   <a
-                    href="mailto:hello@womenintech.uz"
+                    href="mailto:info@stemwoman.uz"
                     className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm flex items-center gap-2"
                   >
                     <Mail className="w-4 h-4 text-pink-400" />
-                    hello@womenintech.uz
+                    info@stemwoman.uz
                   </a>
                 </li>
                 <li>

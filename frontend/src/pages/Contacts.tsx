@@ -10,7 +10,7 @@ const TELEGRAM_URL = "https://t.me/stemwoman_uz";
 const PHONE_DISPLAY = "+998 (77) 187-00-27";
 const PHONE_TEL = "+998771870027";
 
-const EMAIL = "hello@womenintech.uz";
+const EMAIL = "info@stemwoman.uz";
 const ADDRESS = "Ташкент, Узбекистан";
 
 const socialItems = [
