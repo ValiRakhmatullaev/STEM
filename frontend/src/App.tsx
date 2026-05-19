@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 import Layout from "./layout/Layout";
 import RequireAuth from "./components/RequireAuth";
+import ScrollToTop from "./components/ScrollToTop";
 
 const Home = lazy(() => import("./pages/Home"));
 const Events = lazy(() => import("./pages/Events"));
@@ -34,11 +35,13 @@ const Register = lazy(() => import("./pages/Register"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 function App() {
   return (
-    <Routes>
-      {/* Основной layout для всех защищённых/основных страниц */}
-      <Route path="/" element={<Layout />}>
-        {/* Главная */}
-        <Route index element={<Home />} />
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* Основной layout для всех защищённых/основных страниц */}
+        <Route path="/" element={<Layout />}>
+          {/* Главная */}
+          <Route index element={<Home />} />
 
         {/* Мероприятия */}
         <Route path="events" element={<Events />} />
@@ -89,8 +92,9 @@ function App() {
       <Route path="/checkins-panel" element={<AdminCheckins />} />
       <Route path="/checkins-lite" element={<CheckinsLite />} />
 
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
 }
 
