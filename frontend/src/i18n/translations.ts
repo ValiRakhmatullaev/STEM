@@ -57,11 +57,11 @@ export const TRANSLATIONS: Record<
       details: "Подробнее",
     },
     careerFairs: {
-      badge: "Прямой контакт с работодателями",
-      titlePrefix: "Карьерные",
-      titleAccent: "возможности",
+      badge: "STEM, карьера и развитие",
+      titlePrefix: "Возможности",
+      titleAccent: "в STEM",
       subtitle:
-        "Встречайтесь с HR и техническими специалистами, узнавайте о вакансиях и стажировках лично",
+        "Вакансии, стажировки, образовательные программы, мероприятия и карьерные инициативы для развития в STEM",
       countOne: "возможность",
       countMany: "возможностей",
       errorLoad: "Не удалось загрузить возможности",
@@ -369,13 +369,13 @@ export const TRANSLATIONS: Record<
         } as any,
         fairs: {
           title: "Возможности",
-          desc: "Прямой контакт с работодателями",
+          desc: "STEM, карьера и развитие",
         } as any,
       } as any,
       fairs: {
-        label: "Карьерные возможности",
-        title: "Встречайтесь с работодателями лицом к лицу",
-        desc: "Узнавайте о вакансиях, стажировках и карьерных программах. Прямой контакт с HR и техническими специалистами.",
+        label: "Возможности",
+        title: "Возможности в STEM",
+        desc: "Узнавайте о вакансиях, стажировках, образовательных программах, мероприятиях и карьерных инициативах для развития в STEM.",
         allButton: "Смотреть все возможности",
       } as any,
       platformNow: {
@@ -449,10 +449,10 @@ export const TRANSLATIONS: Record<
       details: "Batafsil",
     },
     careerFairs: {
-      badge: "Ish beruvchilar bilan bevosita aloqa",
-      titlePrefix: "Karyera",
-      titleAccent: "imkoniyatlari",
-      subtitle: "HR va texnik mutaxassislar bilan uchrashing, vakansiya va stajirovkalar haqida bilib oling",
+      badge: "STEM, karyera va rivojlanish",
+      titlePrefix: "STEM sohasidagi",
+      titleAccent: "imkoniyatlar",
+      subtitle: "STEM sohasida rivojlanish uchun vakansiyalar, amaliyotlar, ta'lim dasturlari, tadbirlar va karyera tashabbuslari",
       countOne: "imkoniyat",
       countMany: "imkoniyat",
       errorLoad: "Imkoniyatlarni yuklab bo'lmadi",
@@ -762,13 +762,13 @@ export const TRANSLATIONS: Record<
         } as any,
         fairs: {
           title: "Imkoniyatlar",
-          desc: "Ish beruvchilar bilan bevosita aloqa",
+          desc: "STEM, karyera va rivojlanish",
         } as any,
       } as any,
       fairs: {
-        label: "Karyera imkoniyatlari",
-        title: "Ish beruvchilar bilan yuzma-yuz uchrashing",
-        desc: "Bo‘sh ish o‘rinlari, amaliyotlar va karyera dasturlari haqida bilib oling. HR va texnik mutaxassislar bilan bevosita muloqot.",
+        label: "Imkoniyatlar",
+        title: "STEM sohasidagi imkoniyatlar",
+        desc: "STEM sohasida rivojlanish uchun vakansiyalar, amaliyotlar, ta'lim dasturlari, tadbirlar va karyera tashabbuslari haqida bilib oling.",
         allButton: "Barcha imkoniyatlarni ko‘rish",
       } as any,
       platformNow: {
@@ -841,10 +841,10 @@ export const TRANSLATIONS: Record<
       details: "Details",
     },
     careerFairs: {
-      badge: "Direct contact with employers",
-      titlePrefix: "Career",
+      badge: "STEM, career and growth",
+      titlePrefix: "STEM",
       titleAccent: "opportunities",
-      subtitle: "Meet HR and technical specialists and learn about jobs and internships in person",
+      subtitle: "Jobs, internships, educational programs, events and career initiatives for growth in STEM",
       countOne: "opportunity",
       countMany: "opportunities",
       errorLoad: "Failed to load opportunities",
@@ -1154,13 +1154,13 @@ export const TRANSLATIONS: Record<
         } as any,
         fairs: {
           title: "Opportunities",
-          desc: "Direct contact with employers",
+          desc: "STEM, career and growth",
         } as any,
       } as any,
       fairs: {
-        label: "Career Opportunities",
-        title: "Meet employers face to face",
-        desc: "Learn about jobs, internships, and career programs. Direct contact with HR and technical specialists.",
+        label: "Opportunities",
+        title: "STEM opportunities",
+        desc: "Learn about jobs, internships, educational programs, events and career initiatives for growth in STEM.",
         allButton: "View all opportunities",
       } as any,
       platformNow: {
