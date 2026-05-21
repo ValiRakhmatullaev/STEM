@@ -235,7 +235,7 @@ export default function CareerFairDetail() {
     if (!id) return;
     apiFetch(`/api/career-fairs/${id}/`)
       .then((res) => {
-        if (!res.ok) throw new Error("Ярмарка не найдена");
+        if (!res.ok) throw new Error("Возможность не найдена");
         return res.json();
       })
       .then(setFair)
@@ -283,13 +283,13 @@ export default function CareerFairDetail() {
           >
             <Calendar className="w-8 h-8 text-pink-400" />
           </motion.div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-3">Ярмарка не найдена</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-3">Возможность не найдена</h2>
           <Link
             to="/career-fairs"
             className="inline-flex items-center gap-2 text-pink-600 font-medium hover:text-pink-700 group text-sm"
           >
             <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
-            Вернуться к списку ярмарок
+            Вернуться к списку возможностей
           </Link>
         </motion.div>
       </div>
@@ -324,7 +324,7 @@ export default function CareerFairDetail() {
             >
               <ArrowRight className="w-4 h-4 rotate-180 transition-transform duration-300" />
             </motion.div>
-            Все ярмарки
+            Все возможности
           </Link>
         </motion.div>
 
@@ -346,7 +346,7 @@ export default function CareerFairDetail() {
                 <div className="aspect-[16/7] bg-gradient-to-br from-purple-400/20 via-pink-400/20 to-rose-400/20 flex items-center justify-center rounded-t-2xl">
                   <div className="text-center">
                     <Calendar className="w-16 h-16 mx-auto text-white/40 mb-2" />
-                    <p className="text-white/70 font-medium text-sm">Карьерная ярмарка</p>
+                    <p className="text-white/70 font-medium text-sm">Карьерная возможность</p>
                   </div>
                 </div>
               )}
@@ -421,7 +421,7 @@ export default function CareerFairDetail() {
                   <motion.div variants={fadeInUp} className="mb-8">
                     <h2 className="font-bold text-xl text-gray-900 mb-3 flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-pink-500" />
-                      О ярмарке
+                      О возможности
                     </h2>
                     <div className="text-gray-700 leading-relaxed whitespace-pre-wrap text-sm">
                       {fair.description}

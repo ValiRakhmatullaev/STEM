@@ -58,7 +58,7 @@ function App() {
         <Route path="companies" element={<Companies />} />
         <Route path="companies/:id" element={<CompanyDetail />} />
 
-        {/* Карьерные ярмарки */}
+        {/* Карьерные возможности */}
         <Route path="career-fairs" element={<CareerFairs />} />
         <Route path="career-fairs/:id" element={<CareerFairDetail />} />
 
