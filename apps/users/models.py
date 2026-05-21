@@ -1,5 +1,5 @@
 """
-User system for STEM Women Uzbekistan.
+User system for STEM Woman Uzbekistan.
 Один тип пользователя; админ — через is_staff / is_superuser в Django.
 """
 from __future__ import annotations

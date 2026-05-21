@@ -1,5 +1,5 @@
 """
-Django settings for STEM Women Uzbekistan platform.
+Django settings for STEM Woman Uzbekistan platform.
 
 Security and operations behaviour is driven by environment variables.
 See `.env.example` for production-oriented defaults documentation.

@@ -1,6 +1,6 @@
 # Разделы админ-панели — что это и за что
 
-Краткое описание разделов Django Admin для платформы STEM Women Uzbekistan.
+Краткое описание разделов Django Admin для платформы STEM Woman Uzbekistan.
 
 ---
 

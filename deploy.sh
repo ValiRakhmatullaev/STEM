@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# STEM Women Uzbekistan - Production Deploy Script
+# STEM Woman Uzbekistan - Production Deploy Script
 # ==========================================
 
 set -e  # Exit on error

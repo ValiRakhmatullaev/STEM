@@ -305,7 +305,7 @@ export default function Events() {
           >
             {t("events.title")}
             <span className="bg-gradient-to-r from-pink-500 via-rose-500 to-purple-400 bg-clip-text text-transparent">
-              {" "}STEM Women Uzbekistan
+              {" "}STEM Woman Uzbekistan
             </span>
           </motion.h1>
 

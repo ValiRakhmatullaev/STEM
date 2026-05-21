@@ -1,6 +1,6 @@
 # 🚀 Production Deployment Guide
 
-Пошаговая инструкция по деплою STEM Women Uzbekistan на production сервер.
+Пошаговая инструкция по деплою STEM Woman Uzbekistan на production сервер.
 
 ---
 

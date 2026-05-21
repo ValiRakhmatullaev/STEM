@@ -1,5 +1,5 @@
 """
-WSGI config for STEM Women Uzbekistan.
+WSGI config for STEM Woman Uzbekistan.
 """
 import os
 

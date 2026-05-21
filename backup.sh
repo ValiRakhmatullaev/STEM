@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# STEM Women Uzbekistan - Database Backup Script
+# STEM Woman Uzbekistan - Database Backup Script
 # ==========================================
 # Uses DATABASE_USER / DATABASE_NAME from .env.production (same as docker-compose).
 

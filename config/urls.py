@@ -1,5 +1,5 @@
 """
-URL configuration for STEM Women Uzbekistan.
+URL configuration for STEM Woman Uzbekistan.
 """
 from django.conf import settings
 from django.conf.urls.static import static

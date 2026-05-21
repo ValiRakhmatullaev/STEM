@@ -50,7 +50,7 @@ export const TRANSLATIONS: Record<
     jobs: {
       badge: "Вакансии",
       title: "Поиск вакансий",
-      subtitle: "Актуальные предложения от компаний-партнёров STEM Women Uzbekistan",
+      subtitle: "Актуальные предложения от компаний-партнёров STEM Woman Uzbekistan",
       emptyTitle: "Вакансий не найдено",
       emptySubtitle: "Попробуйте изменить фильтры",
       resetFilters: "Сбросить фильтры",
@@ -103,7 +103,7 @@ export const TRANSLATIONS: Record<
       loading: "Вход...",
       noAccount: "Нет аккаунта?",
       register: "Зарегистрироваться",
-      slogan: "STEM Women Uzbekistan — вместе мы сильнее",
+      slogan: "STEM Woman Uzbekistan — вместе мы сильнее",
       errorNetwork: "Сетевая ошибка. Проверьте подключение.",
       errorCsrf: "Ошибка CSRF-токена. Перезагрузите страницу.",
       errorServer: "Ошибка сервера. Попробуйте позже.",
@@ -134,7 +134,7 @@ export const TRANSLATIONS: Record<
       loading: "Регистрация...",
       haveAccount: "Уже есть аккаунт?",
       login: "Войти",
-      slogan: "STEM Women Uzbekistan — вместе мы сильнее",
+      slogan: "STEM Woman Uzbekistan — вместе мы сильнее",
       successMessage: "Регистрация прошла успешно! Теперь вы можете войти.",
       errorMinChars3: "Минимум 3 символа",
       errorEmailRequired: "Email обязателен",
@@ -298,7 +298,7 @@ export const TRANSLATIONS: Record<
 
       madeInTashkent: "в Ташкенте",
       copyright:
-        "© 2026 STEM Women Uzbekistan. Сделано с",
+        "© 2026 STEM Woman Uzbekistan. Сделано с",
     },
     contacts: {
       help: "Связь",
@@ -324,7 +324,7 @@ export const TRANSLATIONS: Record<
       welcomePrefix: "Добро пожаловать, ",
       hero: {
         badge: "Сообщество женщин в IT Узбекистана",
-        titlePrefix: "STEM Women",
+        titlePrefix: "STEM Woman",
         country: "Uzbekistan",
         subtitleFallback:
           "Сообщество для развития женщин в технологиях: вакансии, мероприятия, карьерные возможности и нетворкинг.",
@@ -442,7 +442,7 @@ export const TRANSLATIONS: Record<
     jobs: {
       badge: "Bo'sh ish o'rinlari",
       title: "Vakansiya qidirish",
-      subtitle: "STEM Women Uzbekistan hamkor kompaniyalaridan dolzarb takliflar",
+      subtitle: "STEM Woman Uzbekistan hamkor kompaniyalaridan dolzarb takliflar",
       emptyTitle: "Vakansiyalar topilmadi",
       emptySubtitle: "Filtrlarni o'zgartirib ko'ring",
       resetFilters: "Filtrlarni tozalash",
@@ -494,7 +494,7 @@ export const TRANSLATIONS: Record<
       loading: "Kirish...",
       noAccount: "Akkauntingiz yo'qmi?",
       register: "Ro'yxatdan o'tish",
-      slogan: "STEM Women Uzbekistan — birga biz kuchlimiz",
+      slogan: "STEM Woman Uzbekistan — birga biz kuchlimiz",
       errorNetwork: "Tarmoq xatosi. Ulanishni tekshiring.",
       errorCsrf: "CSRF-token xatosi. Sahifani qayta yuklang.",
       errorServer: "Server xatosi. Keyinroq urinib ko'ring.",
@@ -525,7 +525,7 @@ export const TRANSLATIONS: Record<
       loading: "Ro'yxatdan o'tish...",
       haveAccount: "Akkauntingiz bormi?",
       login: "Kirish",
-      slogan: "STEM Women Uzbekistan — birga biz kuchlimiz",
+      slogan: "STEM Woman Uzbekistan — birga biz kuchlimiz",
       successMessage: "Ro'yxatdan o'tish muvaffaqiyatli! Endi kirishingiz mumkin.",
       errorMinChars3: "Kamida 3 belgi",
       errorEmailRequired: "Email majburiy",
@@ -688,7 +688,7 @@ export const TRANSLATIONS: Record<
       address: "Toshkent, O'zbekiston",
 
       madeInTashkent: "Toshkentda",
-      copyright: "© 2026 STEM Women Uzbekistan. Tayyorlangan",
+      copyright: "© 2026 STEM Woman Uzbekistan. Tayyorlangan",
     },
     contacts: {
       help: "Aloqa",
@@ -715,7 +715,7 @@ export const TRANSLATIONS: Record<
       welcomePrefix: "Xush kelibsiz, ",
       hero: {
         badge: "O'zbekistondagi IT sohasida ayollar hamjamiyati",
-        titlePrefix: "STEM Women",
+        titlePrefix: "STEM Woman",
         country: "O'zbekiston",
         subtitleFallback:
           "Texnologiyada ayollarni rivojlantirish uchun hamjamiyat: bo'sh ish o'rinlari, tadbirlar, karyera imkoniyatlari va networking.",
@@ -834,7 +834,7 @@ export const TRANSLATIONS: Record<
     jobs: {
       badge: "Jobs",
       title: "Job search",
-      subtitle: "Latest opportunities from STEM Women Uzbekistan partner companies",
+      subtitle: "Latest opportunities from STEM Woman Uzbekistan partner companies",
       emptyTitle: "No jobs found",
       emptySubtitle: "Try adjusting filters",
       resetFilters: "Reset filters",
@@ -886,7 +886,7 @@ export const TRANSLATIONS: Record<
       loading: "Signing in...",
       noAccount: "Don't have an account?",
       register: "Register",
-      slogan: "STEM Women Uzbekistan — together we are stronger",
+      slogan: "STEM Woman Uzbekistan — together we are stronger",
       errorNetwork: "Network error. Check your connection.",
       errorCsrf: "CSRF token error. Reload the page.",
       errorServer: "Server error. Try again later.",
@@ -917,7 +917,7 @@ export const TRANSLATIONS: Record<
       loading: "Registering...",
       haveAccount: "Already have an account?",
       login: "Sign in",
-      slogan: "STEM Women Uzbekistan — together we are stronger",
+      slogan: "STEM Woman Uzbekistan — together we are stronger",
       successMessage: "Registration successful! You can now sign in.",
       errorMinChars3: "At least 3 characters",
       errorEmailRequired: "Email is required",
@@ -1081,7 +1081,7 @@ export const TRANSLATIONS: Record<
 
       madeInTashkent: "in Tashkent",
       copyright:
-        "© 2026 STEM Women Uzbekistan. Made with",
+        "© 2026 STEM Woman Uzbekistan. Made with",
     },
     contacts: {
       help: "Contact",
@@ -1108,7 +1108,7 @@ export const TRANSLATIONS: Record<
       welcomePrefix: "Welcome, ",
       hero: {
         badge: "Women in IT community in Uzbekistan",
-        titlePrefix: "STEM Women",
+        titlePrefix: "STEM Woman",
         country: "Uzbekistan",
         subtitleFallback:
           "A community to empower women in technology: jobs, events, career opportunities, and networking.",

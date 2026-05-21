@@ -1,5 +1,5 @@
 """
-ASGI config for STEM Women Uzbekistan.
+ASGI config for STEM Woman Uzbekistan.
 """
 import os
 

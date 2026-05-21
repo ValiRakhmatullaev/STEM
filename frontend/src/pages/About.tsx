@@ -62,7 +62,7 @@ export default function About() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
           <img
             src="/STEM_FOTO.png"
-            alt="STEM Women Uzbekistan"
+            alt="STEM Woman Uzbekistan"
             className="mx-auto w-56 h-56 object-contain mb-6"
           />
           <motion.h1

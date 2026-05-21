@@ -1,4 +1,4 @@
-# STEM Women Uzbekistan — Frontend
+# STEM Woman Uzbekistan — Frontend
 
 Фронтенд на **React 18**, **TypeScript**, **Vite** и **Tailwind CSS**.
 
