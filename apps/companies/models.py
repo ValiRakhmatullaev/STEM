@@ -182,6 +182,11 @@ class JobPosting(TimeStampedModel):
         null=True,
         blank=True,
     )
+    apply_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="External application URL on the employer website.",
+    )
     is_active = models.BooleanField(default=True, db_index=True)
     published_at = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField(null=True, blank=True)

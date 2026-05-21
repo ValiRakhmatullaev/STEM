@@ -6,6 +6,8 @@ import json
 import logging
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.db import transaction
 from django.db.models import Count, Q
 from django.http import JsonResponse
@@ -21,6 +23,7 @@ from .models import Company, CompanyUser, CompanyUserRole, JobPosting
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
+validate_url = URLValidator(schemes=["http", "https"])
 
 
 @require_GET
@@ -77,6 +80,7 @@ def job_list(request):
             "published_at": published.isoformat() if published else None,
             "salary_min": str(j.salary_min) if j.salary_min else None,
             "salary_max": str(j.salary_max) if j.salary_max else None,
+            "apply_url": j.apply_url,
         })
     return JsonResponse({"results": data, "pagination": meta})
 
@@ -103,6 +107,7 @@ def job_detail(request, pk):
         "location_type": job.location_type,
         "salary_min": str(job.salary_min) if job.salary_min is not None else None,
         "salary_max": str(job.salary_max) if job.salary_max is not None else None,
+        "apply_url": job.apply_url,
         "published_at": published.isoformat() if published else None,
         "company": {
             "id": job.company_id,
@@ -420,6 +425,7 @@ def company_my_jobs(request):
             "location_type": j.location_type,
             "salary_min": str(j.salary_min) if j.salary_min else None,
             "salary_max": str(j.salary_max) if j.salary_max else None,
+            "apply_url": j.apply_url,
             "is_active": j.is_active,
             "published_at": (j.published_at or j.created_at).isoformat() if (j.published_at or j.created_at) else None,
             "applications_count": int(getattr(j, "_apps_total", 0) or 0),
@@ -451,6 +457,7 @@ def company_create_job(request):
     location_type = (body.get("location_type") or "").strip()
     salary_min = body.get("salary_min")
     salary_max = body.get("salary_max")
+    apply_url = (body.get("apply_url") or "").strip()
 
     errors = {}
     if not title:
@@ -463,6 +470,11 @@ def company_create_job(request):
         errors["employment_type"] = "Тип занятости обязателен."
     if not location_type:
         errors["location_type"] = "Формат работы обязателен."
+    if apply_url:
+        try:
+            validate_url(apply_url)
+        except ValidationError:
+            errors["apply_url"] = "Укажите корректную ссылку, например https://company.com/jobs/123."
     if errors:
         return JsonResponse({"error": "Проверьте заполнение формы.", "field_errors": errors}, status=400)
 
@@ -484,6 +496,7 @@ def company_create_job(request):
         location_type=location_type,
         salary_min=salary_min if salary_min else None,
         salary_max=salary_max if salary_max else None,
+        apply_url=apply_url,
         is_active=True,
         published_at=timezone.now(),
     )

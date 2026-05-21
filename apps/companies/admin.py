@@ -19,4 +19,10 @@ class CompanyUserAdmin(admin.ModelAdmin):
 
 @admin.register(JobPosting)
 class JobPostingAdmin(admin.ModelAdmin):
-    list_display = ("title", "company", "experience_level", "employment_type", "is_active", "published_at")
+    list_display = ("title", "company", "experience_level", "employment_type", "has_apply_url", "is_active", "published_at")
+    list_filter = ("is_active", "experience_level", "employment_type", "location_type")
+    search_fields = ("title", "company__company_name", "apply_url")
+
+    @admin.display(boolean=True, description="External apply link")
+    def has_apply_url(self, obj):
+        return bool(obj.apply_url)

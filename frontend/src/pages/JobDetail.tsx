@@ -134,6 +134,7 @@ interface Job {
   location_type: string;
   salary_min?: number | null;
   salary_max?: number | null;
+  apply_url?: string;
   published_at: string;
   company: Company;
 }
@@ -388,7 +389,17 @@ export default function JobDetail() {
 
               {/* Кнопки действий */}
               <div className="flex flex-wrap gap-4 mb-8">
-                {!user ? (
+                {job.apply_url ? (
+                  <a
+                    href={job.apply_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-semibold hover:brightness-105 transition-all flex items-center justify-center gap-3 shadow-lg shadow-pink-200/50"
+                  >
+                    {t("jobDetail.apply")}
+                    <ArrowRight className="w-5 h-5" />
+                  </a>
+                ) : !user ? (
                   <Link
                     to="/login"
                     className="flex-1 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-2xl font-semibold text-center hover:brightness-105 transition-all shadow-lg shadow-pink-200/50"

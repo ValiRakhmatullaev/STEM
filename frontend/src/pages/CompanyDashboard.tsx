@@ -63,6 +63,7 @@ type JobItem = {
   location_type: string;
   salary_min: string | null;
   salary_max: string | null;
+  apply_url: string;
   is_active: boolean;
   published_at: string | null;
   applications_count: number;
@@ -158,7 +159,18 @@ export default function CompanyDashboard() {
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [jobsLoading, setJobsLoading] = useState(false);
   const [showJobForm, setShowJobForm] = useState(false);
-  const [jobForm, setJobForm] = useState({ title: "", description: "", requirements: "", experience_level: "junior", employment_type: "full_time", location_type: "on_site", salary_min: "", salary_max: "" });
+  const emptyJobForm = {
+    title: "",
+    description: "",
+    requirements: "",
+    experience_level: "junior",
+    employment_type: "full_time",
+    location_type: "on_site",
+    salary_min: "",
+    salary_max: "",
+    apply_url: "",
+  };
+  const [jobForm, setJobForm] = useState(emptyJobForm);
   const [jobFormError, setJobFormError] = useState("");
   const [jobSubmitting, setJobSubmitting] = useState(false);
 
@@ -272,11 +284,14 @@ export default function CompanyDashboard() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        setJobFormError(d.error || "Ошибка создания");
+        const fieldErrors = d.field_errors && typeof d.field_errors === "object"
+          ? Object.values(d.field_errors).join(" ")
+          : "";
+        setJobFormError(fieldErrors || d.error || "Ошибка создания");
         return;
       }
       setShowJobForm(false);
-      setJobForm({ title: "", description: "", requirements: "", experience_level: "junior", employment_type: "full_time", location_type: "on_site", salary_min: "", salary_max: "" });
+      setJobForm(emptyJobForm);
       fetchJobs();
       fetchStats();
     } catch { setJobFormError("Ошибка сети"); } finally { setJobSubmitting(false); }
@@ -454,6 +469,7 @@ export default function CompanyDashboard() {
                   <input value={jobForm.salary_min} onChange={(e) => setJobForm({ ...jobForm, salary_min: e.target.value })} placeholder="Зарплата от" type="number" className="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-300 outline-none text-sm" />
                   <input value={jobForm.salary_max} onChange={(e) => setJobForm({ ...jobForm, salary_max: e.target.value })} placeholder="Зарплата до" type="number" className="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-300 outline-none text-sm" />
                 </div>
+                <input value={jobForm.apply_url} onChange={(e) => setJobForm({ ...jobForm, apply_url: e.target.value })} placeholder="Ссылка для отклика на сайте работодателя (https://...)" type="url" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-300 focus:ring-2 focus:ring-blue-200/50 outline-none text-sm" />
                 <div className="flex gap-3">
                   <button type="button" onClick={createJob} disabled={jobSubmitting} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
                     {jobSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Опубликовать
@@ -488,6 +504,11 @@ export default function CompanyDashboard() {
                           {j.salary_min && <span className="text-gray-400">{j.salary_min}{j.salary_max ? ` – ${j.salary_max}` : "+"}</span>}
                         </div>
                         <p className="text-sm text-gray-500 line-clamp-2">{j.description}</p>
+                        {j.apply_url && (
+                          <a href={j.apply_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline">
+                            <Send className="w-3 h-3" /> Ссылка для отклика
+                          </a>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
                         <div className="text-center">
