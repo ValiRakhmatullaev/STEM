@@ -2,6 +2,8 @@ import { useEffect, useState, ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { apiFetch } from "../api";
+import { useLanguage } from "../context/LanguageContext";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   MapPin,
   Globe,
@@ -58,8 +60,14 @@ const locationTypeLabels: Record<string, string> = {
 type JobItem = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   slug: string;
   description: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   location_type: string;
   experience_level: string;
   employment_type: string;
@@ -284,6 +292,7 @@ function formatDate(dateString: string | null): string {
 // Основной компонент
 export default function CompanyDetail() {
   const { id } = useParams<{ id: string }>();
+  const { locale } = useLanguage();
   const [company, setCompany] = useState<CompanyDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [logoError, setLogoError] = useState(false);
@@ -546,10 +555,10 @@ export default function CompanyDetail() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <h3 className="font-bold text-lg text-gray-900 group-hover:text-pink-700 transition-colors mb-1.5 line-clamp-1">
-                              {job.title}
+                              {pickLocalized(job, "title", locale)}
                             </h3>
                             <p className="text-gray-600 text-sm line-clamp-2 mb-3 leading-relaxed">
-                              {job.description}
+                              {pickLocalized(job, "description", locale)}
                             </p>
                             <div className="flex flex-wrap gap-2">
                               <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-pink-50/80 text-pink-700 border border-pink-200/50">

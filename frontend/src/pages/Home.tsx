@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSp
 import { useAuth } from "../context/useAuth";
 import { useLanguage } from "../context/LanguageContext";
 import { apiFetch } from "../api";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Sparkles, Calendar, Briefcase, Building2, Target,
   ArrowRight, ChevronRight, Users, Zap, Globe, ArrowUpRight,
@@ -309,7 +310,15 @@ const Icon3D = ({ icon: Icon, color, className = "" }: { icon: React.ElementType
 );
 
 type EventItem = { id: number; title: string; date: string; time: string; event_type: string };
-type JobItem = { id: number; title: string; company: string; location_type: string };
+type JobItem = {
+  id: number;
+  title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
+  company: string;
+  location_type: string;
+};
 type FairItem = { id: number; title: string; date_start: string; date_end: string; location: string };
 type HomeBanner = {
   title: string;
@@ -321,12 +330,18 @@ type HomeBanner = {
 type NewsItem = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   summary: string;
+  summary_ru?: string;
+  summary_uz?: string;
+  summary_en?: string;
   published_at: string | null;
 };
 
 export default function Home() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user } = useAuth();
   const [events, setEvents] = useState<EventItem[]>([]);
   const [jobs, setJobs] = useState<JobItem[]>([]);
@@ -640,10 +655,12 @@ export default function Home() {
                       {item.published_at && new Date(item.published_at).toLocaleDateString("ru-RU")}
                     </div>
                     <h3 className="font-bold text-xl text-gray-900 group-hover:text-pink-600 transition-colors line-clamp-2 leading-tight">
-                      {item.title}
+                      {pickLocalized(item, "title", locale)}
                     </h3>
-                    {item.summary && (
-                      <p className="mt-3 text-gray-700 line-clamp-3 leading-relaxed">{item.summary}</p>
+                    {pickLocalized(item, "summary", locale) && (
+                      <p className="mt-3 text-gray-700 line-clamp-3 leading-relaxed">
+                        {pickLocalized(item, "summary", locale)}
+                      </p>
                     )}
                     <div className="mt-4 flex items-center text-pink-600 font-medium text-sm opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
                       {t("home.news.readMore")} <ChevronRight className="w-4 h-4 ml-1" />
@@ -898,7 +915,9 @@ export default function Home() {
                         >
                           <Link to={`/jobs/${j.id}`} className="group flex items-center justify-between p-4 rounded-xl hover:bg-rose-50/80 transition-all border border-transparent hover:border-rose-200/50 backdrop-blur-sm">
                             <div>
-                              <span className="text-gray-800 group-hover:text-rose-700 font-semibold block transition-colors">{j.title}</span>
+                              <span className="text-gray-800 group-hover:text-rose-700 font-semibold block transition-colors">
+                                {pickLocalized(j, "title", locale)}
+                              </span>
                               <span className="text-sm text-gray-600">{j.company}</span>
                             </div>
                             <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-pink-500 transition-colors" />

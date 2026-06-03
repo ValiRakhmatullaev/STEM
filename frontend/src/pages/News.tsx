@@ -4,16 +4,23 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, ChevronRight } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { apiFetch } from "../api";
+import { pickLocalized } from "../utils/localizedContent";
 
 type NewsItem = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   summary: string;
+  summary_ru?: string;
+  summary_uz?: string;
+  summary_en?: string;
   published_at: string | null;
 };
 
 export default function News() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -87,10 +94,12 @@ export default function News() {
                       : t("home.newsPage.dateUnknown")}
                   </div>
                   <h2 className="font-bold text-xl text-gray-900 group-hover:text-pink-600 transition-colors line-clamp-2 leading-tight">
-                    {item.title}
+                    {pickLocalized(item, "title", locale)}
                   </h2>
-                  {item.summary && (
-                    <p className="mt-3 text-gray-700 line-clamp-3 leading-relaxed">{item.summary}</p>
+                  {pickLocalized(item, "summary", locale) && (
+                    <p className="mt-3 text-gray-700 line-clamp-3 leading-relaxed">
+                      {pickLocalized(item, "summary", locale)}
+                    </p>
                   )}
                   <div className="mt-4 flex items-center text-pink-600 font-medium text-sm">
                     {t("home.newsPage.readMore")} <ChevronRight className="w-4 h-4 ml-1" />

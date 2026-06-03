@@ -15,6 +15,15 @@ from .models import JobApplication
 _MAX_RESUME_BYTES = 5 * 1024 * 1024
 
 
+def _job_title_payload(job):
+    return {
+        "title": job.title_ru or job.title or job.title_uz or job.title_en or "",
+        "title_ru": job.title_ru or job.title or "",
+        "title_uz": job.title_uz or "",
+        "title_en": job.title_en or "",
+    }
+
+
 def _validate_resume_upload(upload) -> str | None:
     if upload.size > _MAX_RESUME_BYTES:
         return "Файл резюме слишком большой (максимум 5 МБ)."
@@ -139,7 +148,7 @@ def my_applications(request):
             "cover_letter": a.cover_letter or "",
             "job": {
                 "id": a.job.pk,
-                "title": a.job.title,
+                **_job_title_payload(a.job),
                 "company": a.job.company.company_name,
                 "company_logo": a.job.company.logo.url if a.job.company.logo else None,
             },

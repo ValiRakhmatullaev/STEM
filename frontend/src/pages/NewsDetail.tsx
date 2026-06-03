@@ -2,18 +2,28 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useLanguage } from "../context/LanguageContext";
 import { apiFetch } from "../api";
+import { pickLocalized } from "../utils/localizedContent";
 
 type NewsData = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   summary: string;
+  summary_ru?: string;
+  summary_uz?: string;
+  summary_en?: string;
   content: string;
+  content_ru?: string;
+  content_uz?: string;
+  content_en?: string;
   banner_image: string | null;
   published_at: string | null;
 };
 
 export default function NewsDetail() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const [item, setItem] = useState<NewsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,7 +60,9 @@ export default function NewsDetail() {
 
         {!loading && !error && item && (
           <article className="mt-6 max-w-4xl rounded-3xl bg-white/80 backdrop-blur-xl border border-pink-100/60 shadow-xl p-6 sm:p-8 space-y-4">
-            <h1 className="font-display font-bold text-4xl sm:text-5xl text-gray-900">{item.title}</h1>
+            <h1 className="font-display font-bold text-4xl sm:text-5xl text-gray-900">
+              {pickLocalized(item, "title", locale)}
+            </h1>
             {item.published_at && (
               <p className="text-sm text-gray-500">
                 {new Date(item.published_at).toLocaleString()}
@@ -59,13 +71,15 @@ export default function NewsDetail() {
             {item.banner_image && (
               <img
                 src={item.banner_image}
-                alt={item.title}
+                alt={pickLocalized(item, "title", locale)}
                 className="w-full rounded-2xl border border-pink-100"
               />
             )}
-            {item.summary && <p className="text-gray-700 text-lg font-medium">{item.summary}</p>}
+            {pickLocalized(item, "summary", locale) && (
+              <p className="text-gray-700 text-lg font-medium">{pickLocalized(item, "summary", locale)}</p>
+            )}
             <div className="text-gray-800 whitespace-pre-wrap leading-7">
-              {item.content || t("home.newsDetail.contentMissing")}
+              {pickLocalized(item, "content", locale) || t("home.newsDetail.contentMissing")}
             </div>
           </article>
         )}

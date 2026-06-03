@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../api";
 import { useLanguage } from "../context/LanguageContext";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Briefcase,
   Building2,
@@ -80,7 +81,7 @@ const Background3D = () => (
 
 // ====================== УМЕНЬШЕННАЯ КАРТОЧКА ======================
 const JobCard = ({ job }: { job: any }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   return (
     <Link to={`/jobs/${job.id}`} className="block h-full group">
@@ -92,7 +93,7 @@ const JobCard = ({ job }: { job: any }) => {
       >
         <div className="p-6 flex-1 flex flex-col">
           <h3 className="font-bold text-xl text-gray-900 mb-4 line-clamp-2 leading-tight group-hover:text-pink-600 transition-colors">
-            {job.title}
+            {pickLocalized(job, "title", locale)}
           </h3>
 
           <div className="flex items-center gap-2 mb-5">
@@ -160,7 +161,9 @@ export default function Jobs() {
   const filteredAndSorted = useMemo(() => {
     let list = jobs.filter((job) => {
       const matchSearch = !search ||
-        job.title?.toLowerCase().includes(search.toLowerCase()) ||
+        pickLocalized(job, "title", "ru").toLowerCase().includes(search.toLowerCase()) ||
+        pickLocalized(job, "title", "uz").toLowerCase().includes(search.toLowerCase()) ||
+        pickLocalized(job, "title", "en").toLowerCase().includes(search.toLowerCase()) ||
         job.company?.toLowerCase().includes(search.toLowerCase());
 
       const matchRegion = !region ||
@@ -178,8 +181,8 @@ export default function Jobs() {
 
     if (sort === "newest") list = [...list].sort((a, b) => (b.published_at || "").localeCompare(a.published_at || ""));
     if (sort === "oldest") list = [...list].sort((a, b) => (a.published_at || "").localeCompare(b.published_at || ""));
-    if (sort === "a-z") list = [...list].sort((a, b) => a.title.localeCompare(b.title));
-    if (sort === "z-a") list = [...list].sort((a, b) => b.title.localeCompare(a.title));
+    if (sort === "a-z") list = [...list].sort((a, b) => pickLocalized(a, "title", "ru").localeCompare(pickLocalized(b, "title", "ru")));
+    if (sort === "z-a") list = [...list].sort((a, b) => pickLocalized(b, "title", "ru").localeCompare(pickLocalized(a, "title", "ru")));
 
     return list;
   }, [jobs, search, region, industry, jobType, level, sort]);

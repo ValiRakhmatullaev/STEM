@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/useAuth";
 import { useLanguage } from "../context/LanguageContext";
 import { apiFetch } from "../api";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Briefcase,
   Building2,
@@ -127,8 +128,17 @@ interface Company {
 interface Job {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   description: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   requirements: string;
+  requirements_ru?: string;
+  requirements_uz?: string;
+  requirements_en?: string;
   employment_type: string;
   experience_level: string;
   location_type: string;
@@ -335,7 +345,7 @@ export default function JobDetail() {
               </Link>
 
               <h1 className="font-bold text-3xl lg:text-4xl text-gray-900 leading-tight mb-8">
-                {job.title}
+                {pickLocalized(job, "title", locale)}
               </h1>
 
               {/* Информация в сетке */}
@@ -442,27 +452,27 @@ export default function JobDetail() {
               </div>
 
               {/* Описание */}
-              {job.description && (
+              {pickLocalized(job, "description", locale) && (
                 <div className="pt-8 border-t border-pink-100/40">
                   <h2 className="font-bold text-xl text-gray-900 mb-4 flex items-center gap-2.5">
                     <Sparkles className="w-5 h-5 text-pink-500" />
                     {t("jobDetail.description")}
                   </h2>
                   <div className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
-                    {job.description}
+                    {pickLocalized(job, "description", locale)}
                   </div>
                 </div>
               )}
 
               {/* Требования */}
-              {job.requirements && (
+              {pickLocalized(job, "requirements", locale) && (
                 <div className="pt-8 mt-8 border-t border-pink-100/40">
                   <h2 className="font-bold text-xl text-gray-900 mb-4 flex items-center gap-2.5">
                     <FileText className="w-5 h-5 text-purple-500" />
                     {t("jobDetail.requirements")}
                   </h2>
                   <div className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
-                    {job.requirements}
+                    {pickLocalized(job, "requirements", locale)}
                   </div>
                 </div>
               )}

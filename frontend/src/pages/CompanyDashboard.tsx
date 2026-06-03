@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import { useLanguage } from "../context/LanguageContext";
 import { apiFetch } from "../api";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Building2,
   ArrowLeft,
@@ -56,8 +58,14 @@ type DashStats = {
 type JobItem = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   slug: string;
   description: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   experience_level: string;
   employment_type: string;
   location_type: string;
@@ -86,7 +94,7 @@ type ApplicationItem = {
   applied_at: string | null;
   cover_letter: string;
   resume_url: string | null;
-  job?: { id: number; title: string };
+  job?: { id: number; title: string; title_ru?: string; title_uz?: string; title_en?: string };
   applicant: ApplicantUser;
 };
 type Participant = {
@@ -146,6 +154,7 @@ function fmtDate(iso: string | null) {
 /* ═══════════════════════════════════ */
 export default function CompanyDashboard() {
   const { user, loading: authLoading } = useAuth();
+  const { locale } = useLanguage();
   const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(true);
@@ -494,7 +503,9 @@ export default function CompanyDashboard() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900 truncate">{j.title}</h3>
+                          <h3 className="font-semibold text-gray-900 truncate">
+                            {pickLocalized(j, "title", locale)}
+                          </h3>
                           {!j.is_active && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Неактивна</span>}
                         </div>
                         <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
@@ -503,7 +514,9 @@ export default function CompanyDashboard() {
                           <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600">{LOC_LABELS[j.location_type] || j.location_type}</span>
                           {j.salary_min && <span className="text-gray-400">{j.salary_min}{j.salary_max ? ` – ${j.salary_max}` : "+"}</span>}
                         </div>
-                        <p className="text-sm text-gray-500 line-clamp-2">{j.description}</p>
+                        <p className="text-sm text-gray-500 line-clamp-2">
+                          {pickLocalized(j, "description", locale)}
+                        </p>
                         {j.apply_url && (
                           <a href={j.apply_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline">
                             <Send className="w-3 h-3" /> Ссылка для отклика
@@ -563,7 +576,11 @@ export default function CompanyDashboard() {
                           {a.applicant.is_verified && <BadgeCheck className="w-3.5 h-3.5 text-emerald-500" />}
                         </div>
                         <div className="text-xs text-gray-500 mb-1">{a.applicant.email} · {a.applicant.city || "—"}</div>
-                        {a.job && <div className="text-xs text-blue-600 font-medium mb-2">📋 {a.job.title}</div>}
+                        {a.job && (
+                          <div className="text-xs text-blue-600 font-medium mb-2">
+                            📋 {pickLocalized(a.job, "title", locale)}
+                          </div>
+                        )}
                         {a.cover_letter && <p className="text-sm text-gray-600 bg-gray-50 rounded-xl p-3 mb-2 line-clamp-3">{a.cover_letter}</p>}
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${STATUS_COLORS[a.status] || "bg-gray-50 text-gray-500 border-gray-200"}`}>{STATUS_LABELS[a.status] || a.status}</span>

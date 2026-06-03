@@ -26,6 +26,26 @@ User = get_user_model()
 validate_url = URLValidator(schemes=["http", "https"])
 
 
+def _localized_job_fields(job):
+    title = job.title_ru or job.title or job.title_uz or job.title_en or ""
+    description = job.description_ru or job.description or job.description_uz or job.description_en or ""
+    requirements = job.requirements_ru or job.requirements or job.requirements_uz or job.requirements_en or ""
+    return {
+        "title": title,
+        "title_ru": job.title_ru or job.title or "",
+        "title_uz": job.title_uz or "",
+        "title_en": job.title_en or "",
+        "description": description,
+        "description_ru": job.description_ru or job.description or "",
+        "description_uz": job.description_uz or "",
+        "description_en": job.description_en or "",
+        "requirements": requirements,
+        "requirements_ru": job.requirements_ru or job.requirements or "",
+        "requirements_uz": job.requirements_uz or "",
+        "requirements_en": job.requirements_en or "",
+    }
+
+
 @require_GET
 def company_list(request):
     """
@@ -66,11 +86,15 @@ def job_list(request):
     data = []
     for j in page_items:
         published = j.published_at or j.created_at
+        localized = _localized_job_fields(j)
         data.append({
             "id": j.pk,
-            "title": j.title,
+            **localized,
             "slug": j.slug,
-            "description": (j.description or "")[:300],
+            "description": localized["description"][:300],
+            "description_ru": localized["description_ru"][:300],
+            "description_uz": localized["description_uz"][:300],
+            "description_en": localized["description_en"][:300],
             "company": j.company.company_name,
             "company_industry": j.company.industry,
             "location": j.company.location,
@@ -96,12 +120,11 @@ def job_detail(request, pk):
         pk=pk,
     )
     published = job.published_at or job.created_at
+    localized = _localized_job_fields(job)
     data = {
         "id": job.pk,
-        "title": job.title,
+        **localized,
         "slug": job.slug,
-        "description": job.description or "",
-        "requirements": job.requirements or "",
         "experience_level": job.experience_level,
         "employment_type": job.employment_type,
         "location_type": job.location_type,
@@ -132,9 +155,8 @@ def company_detail(request, pk):
     job_list_data = [
         {
             "id": j.pk,
-            "title": j.title,
+            **_localized_job_fields(j),
             "slug": j.slug,
-            "description": (j.description or "")[:300],
             "location_type": j.location_type,
             "experience_level": j.experience_level,
             "employment_type": j.employment_type,
@@ -415,11 +437,15 @@ def company_my_jobs(request):
     )
     data = []
     for j in jobs:
+        localized = _localized_job_fields(j)
         data.append({
             "id": j.pk,
-            "title": j.title,
+            **localized,
             "slug": j.slug,
-            "description": (j.description or "")[:200],
+            "description": localized["description"][:200],
+            "description_ru": localized["description_ru"][:200],
+            "description_uz": localized["description_uz"][:200],
+            "description_en": localized["description_en"][:200],
             "experience_level": j.experience_level,
             "employment_type": j.employment_type,
             "location_type": j.location_type,
@@ -663,7 +689,10 @@ def company_all_applicants(request):
             "resume_url": request.build_absolute_uri(a.resume_url.url) if a.resume_url else None,
             "job": {
                 "id": a.job.pk,
-                "title": a.job.title,
+                "title": _localized_job_fields(a.job)["title"],
+                "title_ru": _localized_job_fields(a.job)["title_ru"],
+                "title_uz": _localized_job_fields(a.job)["title_uz"],
+                "title_en": _localized_job_fields(a.job)["title_en"],
             },
             "applicant": {
                 "id": u.pk,

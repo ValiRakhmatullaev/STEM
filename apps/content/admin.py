@@ -6,8 +6,9 @@ from .models import HomeBanner, NewsItem
 
 
 class NewsItemAdminForm(forms.ModelForm):
-    """Форма с богатым редактором для поля «Полный текст»: шрифт, размер, картинки в тексте."""
-    content = forms.CharField(widget=forms.Textarea(attrs={"rows": 14}), required=False)
+    content_ru = forms.CharField(widget=forms.Textarea(attrs={"rows": 14}), required=False)
+    content_uz = forms.CharField(widget=forms.Textarea(attrs={"rows": 14}), required=False)
+    content_en = forms.CharField(widget=forms.Textarea(attrs={"rows": 14}), required=False)
 
     class Meta:
         model = NewsItem
@@ -22,21 +23,21 @@ class HomeBannerAdmin(admin.ModelAdmin):
     ordering = ("priority", "-updated_at")
     list_editable = ("is_active", "priority")
     fieldsets = (
-        ("Текст баннера", {
+        ("Banner text", {
             "fields": ("title", "subtitle"),
-            "description": "Заголовок и подзаголовок показываются справа от картинки (или по центру, если картинки нет).",
+            "description": "Title and subtitle shown on the home banner.",
         }),
-        ("Кнопка", {
+        ("Button", {
             "fields": ("button_label", "button_url"),
-            "description": "Необязательно. Например: «Присоединиться», /register",
+            "description": "Optional. Example: Join, /register",
         }),
-        ("Изображение", {
+        ("Image", {
             "fields": ("image",),
-            "description": "Картинка слева на полэкрана. Если не загружать — баннер будет только с градиентом и текстом.",
+            "description": "Optional banner image.",
         }),
-        ("Показ и приоритет", {
+        ("Display and priority", {
             "fields": ("is_active", "priority", "starts_at", "ends_at"),
-            "description": "Активен только один баннер: с меньшим значением «Приоритет» и попадающий в даты (если указаны).",
+            "description": "Lower priority number appears first.",
         }),
     )
 
@@ -44,44 +45,65 @@ class HomeBannerAdmin(admin.ModelAdmin):
         return bool(obj.image)
 
     has_image.boolean = True
-    has_image.short_description = "Есть фото"
+    has_image.short_description = "Has image"
 
 
 @admin.register(NewsItem)
 class NewsItemAdmin(admin.ModelAdmin):
     form = NewsItemAdminForm
-    list_display = ("title", "is_published", "published_at", "updated_at")
+    list_display = ("display_title", "is_published", "published_at", "updated_at")
     list_filter = ("is_published",)
-    search_fields = ("title", "summary", "content")
+    search_fields = (
+        "title",
+        "title_ru",
+        "title_uz",
+        "title_en",
+        "summary_ru",
+        "summary_uz",
+        "summary_en",
+        "content_ru",
+        "content_uz",
+        "content_en",
+    )
     ordering = ("-published_at", "-created_at")
     list_editable = ("is_published",)
-    prepopulated_fields = {"slug": ("title",)}
+    prepopulated_fields = {"slug": ("title_ru",)}
     readonly_fields = ("created_at", "updated_at")
     fieldsets = (
-        ("Основное", {
-            "fields": ("title", "slug", "summary"),
-            "description": "Краткое описание (summary) показывается на главной в блоке «Новости».",
+        ("Main", {
+            "fields": ("slug",),
+            "description": "Slug is used in links. It is usually generated from the Russian title.",
         }),
-        ("Картинка новости", {
+        ("Russian", {
+            "fields": ("title_ru", "summary_ru", "content_ru"),
+        }),
+        ("Uzbek", {
+            "fields": ("title_uz", "summary_uz", "content_uz"),
+        }),
+        ("English", {
+            "fields": ("title_en", "summary_en", "content_en"),
+        }),
+        ("News image", {
             "fields": ("banner_image",),
-            "description": "Изображение показывается на странице новости сверху. Можно не загружать.",
+            "description": "Optional image shown on the news detail page.",
         }),
-        ("Полный текст", {
-            "fields": ("content",),
-            "description": "Редактор с форматированием: шрифт, размер, жирный, списки, ссылки. Кнопка «Картинка» — вставка изображений в текст (загрузка на сервер). На главной выводятся только заголовок и summary.",
-        }),
-        ("Публикация", {
+        ("Publication", {
             "fields": ("is_published", "published_at"),
-            "description": "На главной отображаются только новости с включённым «Опубликовано». Дата — для сортировки и отображения.",
         }),
-        ("Служебное", {
+        ("System", {
             "fields": ("created_at", "updated_at"),
             "classes": ("collapse",),
         }),
     )
 
+    @admin.display(description="Title")
+    def display_title(self, obj):
+        return obj.title_ru or obj.title or obj.title_uz or obj.title_en
+
     def save_model(self, request, obj, form, change):
+        obj.title = obj.title_ru or obj.title_uz or obj.title_en or obj.title
+        obj.summary = obj.summary_ru or obj.summary_uz or obj.summary_en or obj.summary
+        obj.content = obj.content_ru or obj.content_uz or obj.content_en or obj.content
         if obj.is_published and obj.published_at is None:
             obj.published_at = timezone.now()
         super().save_model(request, obj, form, change)
-

@@ -1,11 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import { useLanguage } from "../context/LanguageContext";
 import { apiFetch } from "../api";
+import { pickLocalized } from "../utils/localizedContent";
 import { Briefcase, MessageCircle, Calendar, Send, Loader2, ArrowLeft, CheckCircle2, XCircle, Clock, X } from "lucide-react";
 
 type Interview = { id: number; scheduled_at: string; duration_minutes: number; format: string; location: string; note: string; status: string };
-type AppItem = { id: number; status: string; applied_at: string | null; job: { id: number; title: string; company: string }; chat_room_id: number | null; unread_messages?: number; interview: Interview | null };
+type AppItem = {
+  id: number;
+  status: string;
+  applied_at: string | null;
+  job: {
+    id: number;
+    title: string;
+    title_ru?: string;
+    title_uz?: string;
+    title_en?: string;
+    company: string;
+  };
+  chat_room_id: number | null;
+  unread_messages?: number;
+  interview: Interview | null;
+};
 type ChatMsg = { id: number; sender_id: number; text: string; is_read: boolean; created_at: string | null };
 
 const SL: Record<string, string> = { new: "Отправлен", viewed: "Просмотрен", shortlisted: "В шорт-листе", rejected: "Отклонён", hired: "Принят" };
@@ -16,6 +33,7 @@ function fmtDT(iso: string) { const d = new Date(iso); return d.toLocaleDateStri
 
 export default function MyApplications() {
   const { user, loading: al } = useAuth();
+  const { locale } = useLanguage();
   const [apps, setApps] = useState<AppItem[]>([]);
   const [ld, setLd] = useState(true);
   const [roomId, setRoomId] = useState<number | null>(null);
@@ -94,7 +112,9 @@ export default function MyApplications() {
               <div key={a.id} className="bg-white/90 backdrop-blur-xl rounded-2xl border border-pink-100/60 shadow-sm p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <Link to={`/jobs/${a.job.id}`} className="font-semibold text-gray-900 hover:text-pink-600">{a.job.title}</Link>
+                    <Link to={`/jobs/${a.job.id}`} className="font-semibold text-gray-900 hover:text-pink-600">
+                      {pickLocalized(a.job, "title", locale)}
+                    </Link>
                     <div className="text-sm text-gray-500 mt-0.5">{a.job.company} · {fmtD(a.applied_at)}</div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">

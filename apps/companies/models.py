@@ -146,10 +146,19 @@ class JobPosting(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="job_postings",
     )
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
+    title_ru = models.CharField("Title RU", max_length=255, blank=True)
+    title_uz = models.CharField("Title UZ", max_length=255, blank=True)
+    title_en = models.CharField("Title EN", max_length=255, blank=True)
     slug = models.SlugField(unique=True, max_length=255)
-    description = models.TextField()
+    description = models.TextField(blank=True)
+    description_ru = models.TextField("Description RU", blank=True)
+    description_uz = models.TextField("Description UZ", blank=True)
+    description_en = models.TextField("Description EN", blank=True)
     requirements = models.TextField(blank=True)
+    requirements_ru = models.TextField("Requirements RU", blank=True)
+    requirements_uz = models.TextField("Requirements UZ", blank=True)
+    requirements_en = models.TextField("Requirements EN", blank=True)
     skills_required = models.ManyToManyField(
         Skill,
         related_name="job_postings",
@@ -203,7 +212,8 @@ class JobPosting(TimeStampedModel):
         ]
 
     def __str__(self) -> str:
-        return f"{self.title} @ {self.company.company_name}"
+        title = self.title_ru or self.title or self.title_uz or self.title_en or str(self.pk)
+        return f"{title} @ {self.company.company_name}"
 
     def get_absolute_url(self) -> str:
         return reverse("companies:job-detail", kwargs={"slug": self.slug})
