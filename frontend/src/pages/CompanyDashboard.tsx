@@ -181,6 +181,7 @@ export default function CompanyDashboard() {
   };
   const [jobForm, setJobForm] = useState(emptyJobForm);
   const [jobFormError, setJobFormError] = useState("");
+  const [jobFieldErrors, setJobFieldErrors] = useState<Record<string, string>>({});
   const [jobSubmitting, setJobSubmitting] = useState(false);
 
   /* applicants */
@@ -280,6 +281,7 @@ export default function CompanyDashboard() {
   /* ── actions ── */
   const createJob = async () => {
     setJobFormError("");
+    setJobFieldErrors({});
     setJobSubmitting(true);
     try {
       const res = await apiFetch("/api/companies/my-jobs/create/", {
@@ -293,14 +295,17 @@ export default function CompanyDashboard() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        const fieldErrors = d.field_errors && typeof d.field_errors === "object"
-          ? Object.values(d.field_errors).join(" ")
-          : "";
-        setJobFormError(fieldErrors || d.error || "Ошибка создания");
+        const fieldErrors: Record<string, string> = d.field_errors && typeof d.field_errors === "object"
+          ? d.field_errors
+          : {};
+        setJobFieldErrors(fieldErrors);
+        const fieldErrorText = Object.values(fieldErrors).join(" ");
+        setJobFormError(fieldErrorText || d.error || "Ошибка создания");
         return;
       }
       setShowJobForm(false);
       setJobForm(emptyJobForm);
+      setJobFieldErrors({});
       fetchJobs();
       fetchStats();
     } catch { setJobFormError("Ошибка сети"); } finally { setJobSubmitting(false); }
@@ -479,6 +484,9 @@ export default function CompanyDashboard() {
                   <input value={jobForm.salary_max} onChange={(e) => setJobForm({ ...jobForm, salary_max: e.target.value })} placeholder="Зарплата до" type="number" className="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-300 outline-none text-sm" />
                 </div>
                 <input value={jobForm.apply_url} onChange={(e) => setJobForm({ ...jobForm, apply_url: e.target.value })} placeholder="Ссылка для отклика на сайте работодателя (https://...)" type="url" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-300 focus:ring-2 focus:ring-blue-200/50 outline-none text-sm" />
+                {jobFieldErrors.apply_url && (
+                  <p className="text-xs font-medium text-red-600">{jobFieldErrors.apply_url}</p>
+                )}
                 <div className="flex gap-3">
                   <button type="button" onClick={createJob} disabled={jobSubmitting} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
                     {jobSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Опубликовать
