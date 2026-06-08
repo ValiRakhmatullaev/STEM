@@ -121,7 +121,7 @@ const TiltCard = ({ children }: { children: React.ReactNode }) => (
 
 // ====================== Types ======================
 interface Company {
-  id: number;
+  id: number | null;
   company_name: string;
 }
 
@@ -147,6 +147,9 @@ interface Job {
   apply_url?: string;
   published_at: string;
   company: Company;
+  posted_by_company?: boolean;
+  publisher_name?: string;
+  publisher_company_id?: number | null;
 }
 
 interface ApplicationStatus {
@@ -337,12 +340,21 @@ export default function JobDetail() {
           >
             <div className="p-6 lg:p-8">
               {/* Компания и заголовок */}
-              <Link to={`/companies/${job.company.id}`} className="inline-flex items-center gap-2 text-sm text-purple-600 hover:text-pink-600 transition-colors mb-3 group">
-                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center group-hover:bg-pink-100 transition-colors">
-                  <Building2 className="w-4 h-4" />
+              {job.posted_by_company && job.company.id ? (
+                <Link to={`/companies/${job.company.id}`} className="inline-flex items-center gap-2 text-sm text-purple-600 hover:text-pink-600 transition-colors mb-3 group">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center group-hover:bg-pink-100 transition-colors">
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <span className="font-medium">{job.company.company_name}</span>
+                </Link>
+              ) : (
+                <div className="inline-flex items-center gap-2 text-sm text-purple-600 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <span className="font-medium">{job.publisher_name || job.company.company_name}</span>
                 </div>
-                <span className="font-medium">{job.company.company_name}</span>
-              </Link>
+              )}
 
               <h1 className="font-bold text-3xl lg:text-4xl text-gray-900 leading-tight mb-8">
                 {pickLocalized(job, "title", locale)}
@@ -443,12 +455,14 @@ export default function JobDetail() {
                   </button>
                 )}
 
-                <Link
-                  to={`/companies/${job.company.id}`}
-                  className="flex-1 py-4 border border-pink-200 text-pink-700 rounded-2xl font-semibold hover:bg-pink-50 transition-all text-center"
-                >
-                  {t("jobDetail.aboutCompany")}
-                </Link>
+                {job.posted_by_company && job.company.id && (
+                  <Link
+                    to={`/companies/${job.company.id}`}
+                    className="flex-1 py-4 border border-pink-200 text-pink-700 rounded-2xl font-semibold hover:bg-pink-50 transition-all text-center"
+                  >
+                    {t("jobDetail.aboutCompany")}
+                  </Link>
+                )}
               </div>
 
               {/* Описание */}

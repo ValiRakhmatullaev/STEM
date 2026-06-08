@@ -24,6 +24,7 @@ from .models import Company, CompanyUser, CompanyUserRole, JobPosting
 logger = logging.getLogger(__name__)
 User = get_user_model()
 validate_url = URLValidator(schemes=["http", "https"])
+SITE_PUBLISHER_NAME = "STEM Woman Uzbekistan"
 
 
 def _localized_job_fields(job):
@@ -43,6 +44,50 @@ def _localized_job_fields(job):
         "requirements_ru": job.requirements_ru or job.requirements or "",
         "requirements_uz": job.requirements_uz or "",
         "requirements_en": job.requirements_en or "",
+    }
+
+
+def _job_publisher_payload(job):
+    if job.publish_as_company:
+        return {
+            "company": job.company.company_name,
+            "posted_by_company": True,
+            "publisher_name": job.company.company_name,
+            "publisher_company_id": job.company_id,
+        }
+    return {
+        "company": SITE_PUBLISHER_NAME,
+        "posted_by_company": False,
+        "publisher_name": SITE_PUBLISHER_NAME,
+        "publisher_company_id": None,
+    }
+
+
+def _job_publisher_meta(job):
+    if job.publish_as_company:
+        return {
+            "posted_by_company": True,
+            "publisher_name": job.company.company_name,
+            "publisher_company_id": job.company_id,
+        }
+    return {
+        "posted_by_company": False,
+        "publisher_name": SITE_PUBLISHER_NAME,
+        "publisher_company_id": None,
+    }
+
+
+def _job_company_detail_payload(job):
+    if job.publish_as_company:
+        return {
+            "id": job.company_id,
+            "company_name": job.company.company_name,
+            "slug": job.company.slug,
+        }
+    return {
+        "id": None,
+        "company_name": SITE_PUBLISHER_NAME,
+        "slug": "",
     }
 
 
@@ -90,12 +135,12 @@ def job_list(request):
         data.append({
             "id": j.pk,
             **localized,
+            **_job_publisher_payload(j),
             "slug": j.slug,
             "description": localized["description"][:300],
             "description_ru": localized["description_ru"][:300],
             "description_uz": localized["description_uz"][:300],
             "description_en": localized["description_en"][:300],
-            "company": j.company.company_name,
             "company_industry": j.company.industry,
             "location": j.company.location,
             "location_type": j.location_type,
@@ -132,11 +177,8 @@ def job_detail(request, pk):
         "salary_max": str(job.salary_max) if job.salary_max is not None else None,
         "apply_url": job.apply_url,
         "published_at": published.isoformat() if published else None,
-        "company": {
-            "id": job.company_id,
-            "company_name": job.company.company_name,
-            "slug": job.company.slug,
-        },
+        "company": _job_company_detail_payload(job),
+        **_job_publisher_meta(job),
     }
     return JsonResponse(data)
 
@@ -149,7 +191,7 @@ def company_detail(request, pk):
     """
     company = get_object_or_404(Company, pk=pk)
     jobs = (
-        JobPosting.objects.filter(company=company, is_active=True)
+        JobPosting.objects.filter(company=company, is_active=True, publish_as_company=True)
         .order_by("-published_at", "-created_at")
     )
     job_list_data = [
@@ -523,6 +565,7 @@ def company_create_job(request):
         salary_min=salary_min if salary_min else None,
         salary_max=salary_max if salary_max else None,
         apply_url=apply_url,
+        publish_as_company=True,
         is_active=True,
         published_at=timezone.now(),
     )

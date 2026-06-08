@@ -146,6 +146,10 @@ class JobPosting(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="job_postings",
     )
+    publish_as_company = models.BooleanField(
+        default=False,
+        help_text="Show the selected company as the public publisher. If disabled, the job is shown as posted by STEM Woman Uzbekistan.",
+    )
     title = models.CharField(max_length=255, blank=True)
     title_ru = models.CharField("Title RU", max_length=255, blank=True)
     title_uz = models.CharField("Title UZ", max_length=255, blank=True)

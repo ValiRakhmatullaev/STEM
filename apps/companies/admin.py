@@ -20,8 +20,8 @@ class CompanyUserAdmin(admin.ModelAdmin):
 
 @admin.register(JobPosting)
 class JobPostingAdmin(admin.ModelAdmin):
-    list_display = ("display_title", "company", "experience_level", "employment_type", "has_apply_url", "is_active", "published_at")
-    list_filter = ("is_active", "experience_level", "employment_type", "location_type")
+    list_display = ("display_title", "public_publisher", "company", "experience_level", "employment_type", "has_apply_url", "is_active", "published_at")
+    list_filter = ("is_active", "publish_as_company", "experience_level", "employment_type", "location_type")
     search_fields = (
         "title",
         "title_ru",
@@ -36,7 +36,8 @@ class JobPostingAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title_ru",)}
     fieldsets = (
         ("Company", {
-            "fields": ("company", "slug"),
+            "fields": ("company", "publish_as_company", "slug"),
+            "description": "By default the job is shown on the public site as posted by STEM Woman Uzbekistan. Enable Publish as company only when the employer should be visible.",
         }),
         ("Russian", {
             "fields": ("title_ru", "description_ru", "requirements_ru"),
@@ -74,6 +75,10 @@ class JobPostingAdmin(admin.ModelAdmin):
     @admin.display(description="Title")
     def display_title(self, obj):
         return obj.title_ru or obj.title or obj.title_uz or obj.title_en
+
+    @admin.display(description="Public publisher")
+    def public_publisher(self, obj):
+        return obj.company.company_name if obj.publish_as_company else "STEM Woman Uzbekistan"
 
     def save_model(self, request, obj, form, change):
         obj.title = obj.title_ru or obj.title_uz or obj.title_en or obj.title
