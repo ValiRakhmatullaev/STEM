@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { apiFetch } from "../api";
+import { useLanguage } from "../context/LanguageContext";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Calendar,
   MapPin,
@@ -204,8 +206,14 @@ const GradientButton = ({ to, children, variant = "primary", className = "" }: {
 type CareerFairDetailData = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   slug: string;
   description: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   date_start: string;
   date_end: string;
   location: string;
@@ -214,9 +222,15 @@ type CareerFairDetailData = {
   max_companies: number;
 };
 
-function formatDate(iso: string): string {
+function getDateLocale(locale: "ru" | "uz" | "en"): string {
+  if (locale === "uz") return "uz-UZ";
+  if (locale === "en") return "en-US";
+  return "ru-RU";
+}
+
+function formatDate(iso: string, locale: "ru" | "uz" | "en"): string {
   const d = new Date(iso);
-  return d.toLocaleDateString("ru-RU", {
+  return d.toLocaleDateString(getDateLocale(locale), {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -224,6 +238,7 @@ function formatDate(iso: string): string {
 }
 
 export default function CareerFairDetail() {
+  const { locale } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const [fair, setFair] = useState<CareerFairDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -296,6 +311,9 @@ export default function CareerFairDetail() {
     );
   }
 
+  const localizedTitle = pickLocalized(fair, "title", locale);
+  const localizedDescription = pickLocalized(fair, "description", locale);
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden relative" style={{ perspective: "1000px" }}>
       {/* 3D Background Layer */}
@@ -337,7 +355,7 @@ export default function CareerFairDetail() {
                 <motion.div style={{ opacity: bannerOpacity }}>
                   <img
                     src={fair.banner_image}
-                    alt={fair.title}
+                    alt={localizedTitle}
                     className="w-full aspect-[16/7] object-cover rounded-t-2xl"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
@@ -357,7 +375,7 @@ export default function CareerFairDetail() {
                   variants={fadeInUp}
                   className="font-bold text-2xl sm:text-3xl text-gray-900 leading-tight mb-4"
                 >
-                  {fair.title}
+                  {localizedTitle}
                 </motion.h1>
 
                 <motion.div
@@ -375,7 +393,7 @@ export default function CareerFairDetail() {
                     <div>
                       <div className="text-xs text-gray-500">Даты</div>
                       <div className="font-medium">
-                        {formatDate(fair.date_start)} — {formatDate(fair.date_end)}
+                        {formatDate(fair.date_start, locale)} — {formatDate(fair.date_end, locale)}
                       </div>
                     </div>
                   </motion.div>
@@ -417,14 +435,14 @@ export default function CareerFairDetail() {
                 </motion.div>
 
                 {/* Описание */}
-                {fair.description && (
+                {localizedDescription && (
                   <motion.div variants={fadeInUp} className="mb-8">
                     <h2 className="font-bold text-xl text-gray-900 mb-3 flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-pink-500" />
                       О возможности
                     </h2>
                     <div className="text-gray-700 leading-relaxed whitespace-pre-wrap text-sm">
-                      {fair.description}
+                      {localizedDescription}
                     </div>
                   </motion.div>
                 )}

@@ -319,7 +319,16 @@ type JobItem = {
   company: string;
   location_type: string;
 };
-type FairItem = { id: number; title: string; date_start: string; date_end: string; location: string };
+type FairItem = {
+  id: number;
+  title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
+  date_start: string;
+  date_end: string;
+  location: string;
+};
 type HomeBanner = {
   title: string;
   subtitle: string;
@@ -812,7 +821,7 @@ export default function Home() {
                           transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
                         />
                         <Link to={`/career-fairs/${fair.id}`} className="hover:underline font-semibold text-lg flex-1">
-                          {fair.title}
+                          {pickLocalized(fair, "title", locale)}
                         </Link>
                         <span className="text-white/80 text-sm shrink-0 bg-white/10 px-3 py-1 rounded-full">
                           {fair.date_start} — {fair.date_end}

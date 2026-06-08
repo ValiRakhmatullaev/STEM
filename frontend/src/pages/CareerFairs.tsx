@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { apiFetch } from "../api";
 import { useLanguage } from "../context/LanguageContext";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Calendar,
   MapPin,
@@ -204,8 +205,14 @@ const GradientBadge = ({ children, className = "" }: {
 type CareerFairItem = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   slug: string;
   description?: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   date_start: string;
   date_end: string;
   location: string;
@@ -354,7 +361,7 @@ export default function CareerFairs() {
                   <GlassCard delay={idx * 0.1} className="h-full">
                     <div className="p-6 lg:p-7 h-full flex flex-col" style={{ transform: "translateZ(20px)" }}>
                       <h3 className="font-bold text-2xl text-gray-900 group-hover:text-pink-600 transition-colors mb-4 line-clamp-2 leading-tight">
-                        {fair.title}
+                        {pickLocalized(fair, "title", locale)}
                       </h3>
 
                       <div className="space-y-3 mb-6 text-gray-700">
@@ -387,9 +394,9 @@ export default function CareerFairs() {
                         {fair.max_companies}
                       </GradientBadge>
 
-                      {fair.description && (
+                      {pickLocalized(fair, "description", locale) && (
                         <p className="text-gray-600 leading-relaxed line-clamp-3 mb-6 mt-auto">
-                          {fair.description}
+                          {pickLocalized(fair, "description", locale)}
                         </p>
                       )}
 

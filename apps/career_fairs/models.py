@@ -12,9 +12,15 @@ from apps.companies.models import Company
 
 
 class CareerFair(TimeStampedModel):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
+    title_ru = models.CharField("Title (RU)", max_length=255, blank=True)
+    title_uz = models.CharField("Title (UZ)", max_length=255, blank=True)
+    title_en = models.CharField("Title (EN)", max_length=255, blank=True)
     slug = models.SlugField(unique=True, max_length=255)
     description = models.TextField(blank=True)
+    description_ru = models.TextField("Description (RU)", blank=True)
+    description_uz = models.TextField("Description (UZ)", blank=True)
+    description_en = models.TextField("Description (EN)", blank=True)
     date_start = models.DateField(db_index=True)
     date_end = models.DateField(db_index=True)
     location = models.CharField(max_length=255)
@@ -28,13 +34,13 @@ class CareerFair(TimeStampedModel):
     registered_companies_count = models.PositiveIntegerField(default=0)
 
     class Meta:
-        verbose_name = "Career fair"
-        verbose_name_plural = "Career fairs"
+        verbose_name = "Opportunity"
+        verbose_name_plural = "Opportunities"
         ordering = ("-date_start",)
         indexes = [models.Index(fields=["is_active"])]
 
     def __str__(self) -> str:
-        return self.title
+        return self.title_ru or self.title or self.title_uz or self.title_en or f"Opportunity #{self.pk}"
 
     def get_absolute_url(self) -> str:
         return reverse("career_fairs:career-fair-detail", kwargs={"slug": self.slug})
@@ -44,6 +50,8 @@ class CareerFair(TimeStampedModel):
 
         if self.date_start and self.date_end and self.date_start > self.date_end:
             raise ValidationError({"date_end": "End date must be on or after start date."})
+        if not (self.title or self.title_ru or self.title_uz or self.title_en):
+            raise ValidationError({"title_ru": "At least one title language must be provided."})
         super().clean()
 
 
@@ -63,8 +71,8 @@ class CareerFairCompany(models.Model):
     registered_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Career fair company"
-        verbose_name_plural = "Career fair companies"
+        verbose_name = "Opportunity company"
+        verbose_name_plural = "Opportunity companies"
         ordering = ("career_fair", "booth_number")
         unique_together = [("career_fair", "company")]
 
@@ -97,8 +105,8 @@ class CareerFairRegistration(models.Model):
     registered_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Career fair registration"
-        verbose_name_plural = "Career fair registrations"
+        verbose_name = "Opportunity registration"
+        verbose_name_plural = "Opportunity registrations"
         ordering = ("-registered_at",)
         unique_together = [("user", "career_fair")]
 
