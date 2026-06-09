@@ -37,6 +37,12 @@ class HomeBanner(models.Model):
 
 
 class NewsItem(models.Model):
+    class SourceType(models.TextChoices):
+        MANUAL = "manual", "Manual"
+        EVENT = "event", "Event"
+        OPPORTUNITY = "opportunity", "Opportunity"
+        JOB = "job", "Job"
+
     title = models.CharField(max_length=255, blank=True)
     title_ru = models.CharField("Title RU", max_length=255, blank=True)
     title_uz = models.CharField("Title UZ", max_length=255, blank=True)
@@ -57,6 +63,14 @@ class NewsItem(models.Model):
         verbose_name="Картинка новости",
         help_text="Показывается на странице новости сверху. Необязательно.",
     )
+    source_type = models.CharField(
+        max_length=20,
+        choices=SourceType.choices,
+        default=SourceType.MANUAL,
+        db_index=True,
+    )
+    source_id = models.PositiveIntegerField(blank=True, null=True, db_index=True)
+    source_url = models.CharField(max_length=300, blank=True)
     is_published = models.BooleanField(default=False)
     published_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -66,6 +80,12 @@ class NewsItem(models.Model):
         verbose_name = "News item"
         verbose_name_plural = "News items"
         ordering = ("-published_at", "-created_at")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source_type", "source_id"],
+                name="unique_auto_news_source",
+            ),
+        ]
 
     def __str__(self) -> str:
         return self.title_ru or self.title or self.title_uz or self.title_en or str(self.pk)

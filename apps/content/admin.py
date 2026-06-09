@@ -78,8 +78,8 @@ class HomeBannerAdmin(admin.ModelAdmin):
 @admin.register(NewsItem)
 class NewsItemAdmin(admin.ModelAdmin):
     form = NewsItemAdminForm
-    list_display = ("display_title", "is_published", "published_at", "updated_at")
-    list_filter = ("is_published",)
+    list_display = ("display_title", "source_type", "source_id", "is_published", "published_at", "updated_at")
+    list_filter = ("is_published", "source_type")
     search_fields = (
         "title",
         "title_ru",
@@ -91,6 +91,7 @@ class NewsItemAdmin(admin.ModelAdmin):
         "content_ru",
         "content_uz",
         "content_en",
+        "source_url",
     )
     ordering = ("-published_at", "-created_at")
     list_editable = ("is_published",)
@@ -113,6 +114,10 @@ class NewsItemAdmin(admin.ModelAdmin):
         ("News image", {
             "fields": ("banner_image",),
             "description": "Optional image shown on the news detail page.",
+        }),
+        ("Source", {
+            "fields": ("source_type", "source_id", "source_url"),
+            "description": "Manual news should keep source type Manual. Auto-generated news are linked to events, opportunities, or jobs.",
         }),
         ("Publication", {
             "fields": ("is_published", "published_at"),

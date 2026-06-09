@@ -283,6 +283,7 @@ export default function Jobs() {
                 { value: "part_time", key: "partTime" },
                 { value: "contract", key: "contract" },
                 { value: "internship", key: "internship" },
+                { value: "fellowship", key: "fellowship" },
               ].map((opt) => (
                 <option key={opt.value} value={opt.value}>{t(`jobFilters.${opt.key}`)}</option>
               ))}

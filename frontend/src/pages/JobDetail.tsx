@@ -80,6 +80,7 @@ const JOB_TYPE_KEYS: Record<string, string> = {
   part_time: "partTime",
   contract: "contract",
   internship: "internship",
+  fellowship: "fellowship",
 };
 
 const LEVELS: Record<string, string> = {
@@ -147,6 +148,7 @@ interface Job {
   apply_url?: string;
   published_at: string;
   company: Company;
+  employer_name?: string;
   posted_by_company?: boolean;
   publisher_name?: string;
   publisher_company_id?: number | null;
@@ -352,7 +354,7 @@ export default function JobDetail() {
                   <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
                     <Building2 className="w-4 h-4" />
                   </div>
-                  <span className="font-medium">{job.publisher_name || job.company.company_name}</span>
+                  <span className="font-medium">{job.employer_name || job.company.company_name || job.publisher_name}</span>
                 </div>
               )}
 

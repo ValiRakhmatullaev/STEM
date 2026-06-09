@@ -143,7 +143,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const EXP_LABELS: Record<string, string> = { junior: "Junior", middle: "Middle", senior: "Senior", lead: "Lead" };
-const EMP_LABELS: Record<string, string> = { full_time: "Full time", part_time: "Part time", contract: "Contract", internship: "Internship" };
+const EMP_LABELS: Record<string, string> = { full_time: "Full time", part_time: "Part time", contract: "Contract", internship: "Internship", fellowship: "Fellowship" };
 const LOC_LABELS: Record<string, string> = { on_site: "Офис", remote: "Удалённо", hybrid: "Гибрид" };
 
 function fmtDate(iso: string | null) {
@@ -473,7 +473,7 @@ export default function CompanyDashboard() {
                     <option value="junior">Junior</option><option value="middle">Middle</option><option value="senior">Senior</option><option value="lead">Lead</option>
                   </select>
                   <select value={jobForm.employment_type} onChange={(e) => setJobForm({ ...jobForm, employment_type: e.target.value })} className="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-300 outline-none text-sm bg-white">
-                    <option value="full_time">Full time</option><option value="part_time">Part time</option><option value="contract">Contract</option><option value="internship">Internship</option>
+                    <option value="full_time">Full time</option><option value="part_time">Part time</option><option value="contract">Contract</option><option value="internship">Internship</option><option value="fellowship">Fellowship</option>
                   </select>
                   <select value={jobForm.location_type} onChange={(e) => setJobForm({ ...jobForm, location_type: e.target.value })} className="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-300 outline-none text-sm bg-white">
                     <option value="on_site">Офис</option><option value="remote">Удалённо</option><option value="hybrid">Гибрид</option>

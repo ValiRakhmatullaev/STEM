@@ -19,7 +19,15 @@ type NewsData = {
   content_uz?: string;
   content_en?: string;
   banner_image: string | null;
+  source_type?: string;
+  source_url?: string;
   published_at: string | null;
+};
+
+const sourceButtonLabel: Record<string, string> = {
+  ru: "Открыть источник",
+  uz: "Manbani ochish",
+  en: "Open source",
 };
 
 export default function NewsDetail() {
@@ -81,6 +89,14 @@ export default function NewsDetail() {
             <div className="text-gray-800 whitespace-pre-wrap leading-7">
               {pickLocalized(item, "content", locale) || t("home.newsDetail.contentMissing")}
             </div>
+            {item.source_url && item.source_type !== "manual" && (
+              <Link
+                to={item.source_url}
+                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-500/20 hover:from-pink-600 hover:to-rose-600"
+              >
+                {sourceButtonLabel[locale] || sourceButtonLabel.ru}
+              </Link>
+            )}
           </article>
         )}
       </div>

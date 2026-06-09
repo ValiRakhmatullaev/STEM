@@ -149,8 +149,12 @@ def my_applications(request):
             "job": {
                 "id": a.job.pk,
                 **_job_title_payload(a.job),
-                "company": a.job.company.company_name,
-                "company_logo": a.job.company.logo.url if a.job.company.logo else None,
+                "company": (
+                    a.job.company.company_name
+                    if a.job.company_id
+                    else (a.job.employer_name or "STEM Woman Uzbekistan")
+                ),
+                "company_logo": a.job.company.logo.url if a.job.company_id and a.job.company.logo else None,
             },
             "chat_room_id": None,
             "interview": None,

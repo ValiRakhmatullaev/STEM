@@ -19,7 +19,7 @@ from django.views.decorators.http import require_GET, require_http_methods
 from apps.common.audit import record_audit_event
 from apps.common.utils import paginate_queryset
 from apps.jobs.models import JobApplication, ApplicationStatus
-from .models import Company, CompanyUser, CompanyUserRole, JobPosting
+from .models import Company, CompanyUser, CompanyUserRole, EmploymentType, JobPosting
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -57,16 +57,24 @@ def _localized_job_fields(job):
     }
 
 
+def _job_employer_name(job):
+    if job.publish_as_company and job.company_id:
+        return job.company.company_name
+    return job.employer_name or SITE_PUBLISHER_NAME
+
+
 def _job_publisher_payload(job):
-    if job.publish_as_company:
+    if job.publish_as_company and job.company_id:
         return {
             "company": job.company.company_name,
+            "employer_name": job.company.company_name,
             "posted_by_company": True,
             "publisher_name": job.company.company_name,
             "publisher_company_id": job.company_id,
         }
     return {
-        "company": SITE_PUBLISHER_NAME,
+        "company": _job_employer_name(job),
+        "employer_name": _job_employer_name(job),
         "posted_by_company": False,
         "publisher_name": SITE_PUBLISHER_NAME,
         "publisher_company_id": None,
@@ -74,21 +82,23 @@ def _job_publisher_payload(job):
 
 
 def _job_publisher_meta(job):
-    if job.publish_as_company:
+    if job.publish_as_company and job.company_id:
         return {
             "posted_by_company": True,
+            "employer_name": job.company.company_name,
             "publisher_name": job.company.company_name,
             "publisher_company_id": job.company_id,
         }
     return {
         "posted_by_company": False,
+        "employer_name": _job_employer_name(job),
         "publisher_name": SITE_PUBLISHER_NAME,
         "publisher_company_id": None,
     }
 
 
 def _job_company_detail_payload(job):
-    if job.publish_as_company:
+    if job.publish_as_company and job.company_id:
         return {
             "id": job.company_id,
             "company_name": job.company.company_name,
@@ -96,7 +106,7 @@ def _job_company_detail_payload(job):
         }
     return {
         "id": None,
-        "company_name": SITE_PUBLISHER_NAME,
+        "company_name": _job_employer_name(job),
         "slug": "",
     }
 
@@ -107,7 +117,11 @@ def company_list(request):
     GET /api/companies/
     Список компаний из БД (то, что добавлено в админке).
     """
-    companies = Company.objects.all().order_by("-created_at")
+    companies = (
+        Company.objects.filter(show_in_directory=True)
+        .annotate(job_count=Count("job_postings", filter=Q(job_postings__is_active=True, job_postings__publish_as_company=True)))
+        .order_by("-created_at")
+    )
     page_items, meta = paginate_queryset(request, companies, per_page=50)
     data = [
         {
@@ -117,7 +131,9 @@ def company_list(request):
             "industry": c.industry,
             "size": c.size,
             "location": c.location,
+            "show_in_directory": c.show_in_directory,
             "is_verified": c.is_verified,
+            "job_count": int(getattr(c, "job_count", 0) or 0),
             **{
                 key: value[:200] if key.startswith("description") else value
                 for key, value in _localized_company_fields(c).items()
@@ -154,8 +170,8 @@ def job_list(request):
             "description_ru": localized["description_ru"][:300],
             "description_uz": localized["description_uz"][:300],
             "description_en": localized["description_en"][:300],
-            "company_industry": j.company.industry,
-            "location": j.company.location,
+            "company_industry": j.company.industry if j.company_id else "",
+            "location": j.company.location if j.company_id else "",
             "location_type": j.location_type,
             "experience_level": j.experience_level,
             "employment_type": j.employment_type,
@@ -202,7 +218,7 @@ def company_detail(request, pk):
     GET /api/companies/<id>/
     Одна компания по id + активные вакансии.
     """
-    company = get_object_or_404(Company, pk=pk)
+    company = get_object_or_404(Company.objects.filter(show_in_directory=True), pk=pk)
     jobs = (
         JobPosting.objects.filter(company=company, is_active=True, publish_as_company=True)
         .order_by("-published_at", "-created_at")
@@ -377,6 +393,7 @@ def company_me(request):
             "industry": c.industry,
             "size": c.size,
             "location": c.location,
+            "show_in_directory": c.show_in_directory,
             "is_verified": c.is_verified,
             "is_approved_for_talents": c.is_approved_for_talents,
             **_localized_company_fields(c),
@@ -549,6 +566,8 @@ def company_create_job(request):
         errors["experience_level"] = "Уровень опыта обязателен."
     if not employment_type:
         errors["employment_type"] = "Тип занятости обязателен."
+    elif employment_type not in EmploymentType.values:
+        errors["employment_type"] = "Недопустимый тип занятости."
     if not location_type:
         errors["location_type"] = "Формат работы обязателен."
     if apply_url:
@@ -578,6 +597,7 @@ def company_create_job(request):
         salary_min=salary_min if salary_min else None,
         salary_max=salary_max if salary_max else None,
         apply_url=apply_url,
+        employer_name=membership.company.company_name,
         publish_as_company=True,
         is_active=True,
         published_at=timezone.now(),

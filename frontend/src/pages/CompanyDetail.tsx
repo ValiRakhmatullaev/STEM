@@ -41,6 +41,7 @@ const employmentTypeLabels: Record<string, string> = {
   contract: "Контракт",
   freelance: "Фриланс",
   internship: "Стажировка",
+  fellowship: "Fellowship",
 };
 
 const experienceLabels: Record<string, string> = {

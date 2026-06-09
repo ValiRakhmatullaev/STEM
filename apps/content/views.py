@@ -47,6 +47,8 @@ def _news_payload(news):
         "content_uz": news.content_uz or "",
         "content_en": news.content_en or "",
         "banner_image": news.banner_image.url if news.banner_image else None,
+        "source_type": news.source_type,
+        "source_url": news.source_url,
         "published_at": news.published_at.isoformat() if news.published_at else None,
     }
 

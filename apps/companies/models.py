@@ -45,6 +45,7 @@ class EmploymentType(models.TextChoices):
     PART_TIME = "part_time", "Part time"
     CONTRACT = "contract", "Contract"
     INTERNSHIP = "internship", "Internship"
+    FELLOWSHIP = "fellowship", "Fellowship"
 
 
 class LocationType(models.TextChoices):
@@ -77,6 +78,11 @@ class Company(TimeStampedModel):
         db_index=True,
     )
     location = models.CharField(max_length=255)
+    show_in_directory = models.BooleanField(
+        default=True,
+        db_index=True,
+        help_text="Show this company in the public Companies section.",
+    )
     is_verified = models.BooleanField(default=False)
     verified_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -148,10 +154,17 @@ class JobPosting(TimeStampedModel):
         Company,
         on_delete=models.CASCADE,
         related_name="job_postings",
+        null=True,
+        blank=True,
     )
     publish_as_company = models.BooleanField(
         default=False,
         help_text="Show the selected company as the public publisher. If disabled, the job is shown as posted by STEM Woman Uzbekistan.",
+    )
+    employer_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Public employer name for this job or internship. Use this when the employer should not be added to the Companies section.",
     )
     title = models.CharField(max_length=255, blank=True)
     title_ru = models.CharField("Title RU", max_length=255, blank=True)
@@ -220,7 +233,8 @@ class JobPosting(TimeStampedModel):
 
     def __str__(self) -> str:
         title = self.title_ru or self.title or self.title_uz or self.title_en or str(self.pk)
-        return f"{title} @ {self.company.company_name}"
+        employer = self.company.company_name if self.company_id else (self.employer_name or "STEM Woman Uzbekistan")
+        return f"{title} @ {employer}"
 
     def get_absolute_url(self) -> str:
         return reverse("companies:job-detail", kwargs={"slug": self.slug})
@@ -233,4 +247,8 @@ class JobPosting(TimeStampedModel):
                 raise ValidationError(
                     {"salary_max": "Salary max must be greater than or equal to salary min."}
                 )
+        if self.publish_as_company and not self.company_id:
+            raise ValidationError(
+                {"company": "Select a company when publishing this job as a company."}
+            )
         super().clean()
