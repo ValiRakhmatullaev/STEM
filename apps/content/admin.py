@@ -17,19 +17,32 @@ class NewsItemAdminForm(forms.ModelForm):
 
 @admin.register(HomeBanner)
 class HomeBannerAdmin(admin.ModelAdmin):
-    list_display = ("title", "is_active", "priority", "has_image", "starts_at", "ends_at", "updated_at")
+    list_display = ("display_title", "is_active", "priority", "has_image", "starts_at", "ends_at", "updated_at")
     list_filter = ("is_active",)
-    search_fields = ("title", "subtitle")
+    search_fields = (
+        "title",
+        "title_ru",
+        "title_uz",
+        "title_en",
+        "subtitle_ru",
+        "subtitle_uz",
+        "subtitle_en",
+    )
     ordering = ("priority", "-updated_at")
     list_editable = ("is_active", "priority")
     fieldsets = (
-        ("Banner text", {
-            "fields": ("title", "subtitle"),
-            "description": "Title and subtitle shown on the home banner.",
+        ("Russian", {
+            "fields": ("title_ru", "subtitle_ru", "button_label_ru"),
+        }),
+        ("Uzbek", {
+            "fields": ("title_uz", "subtitle_uz", "button_label_uz"),
+        }),
+        ("English", {
+            "fields": ("title_en", "subtitle_en", "button_label_en"),
         }),
         ("Button", {
-            "fields": ("button_label", "button_url"),
-            "description": "Optional. Example: Join, /register",
+            "fields": ("button_url",),
+            "description": "Optional. Example: /register",
         }),
         ("Image", {
             "fields": ("image",),
@@ -39,13 +52,27 @@ class HomeBannerAdmin(admin.ModelAdmin):
             "fields": ("is_active", "priority", "starts_at", "ends_at"),
             "description": "Lower priority number appears first.",
         }),
+        ("Legacy fallback", {
+            "classes": ("collapse",),
+            "fields": ("title", "subtitle", "button_label"),
+        }),
     )
+
+    @admin.display(description="Title")
+    def display_title(self, obj):
+        return str(obj)
 
     def has_image(self, obj):
         return bool(obj.image)
 
     has_image.boolean = True
     has_image.short_description = "Has image"
+
+    def save_model(self, request, obj, form, change):
+        obj.title = obj.title_ru or obj.title or obj.title_uz or obj.title_en
+        obj.subtitle = obj.subtitle_ru or obj.subtitle or obj.subtitle_uz or obj.subtitle_en
+        obj.button_label = obj.button_label_ru or obj.button_label or obj.button_label_uz or obj.button_label_en
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(NewsItem)

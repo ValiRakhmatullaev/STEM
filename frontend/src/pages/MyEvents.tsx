@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motio
 import { useAuth } from "../context/useAuth";
 import { apiFetch } from "../api";
 import { useLanguage } from "../context/LanguageContext";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Calendar,
   Clock,
@@ -18,6 +19,13 @@ import {
 type MyEventItem = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
+  description?: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   event_type: string;
   date: string;
   time: string;
@@ -227,7 +235,7 @@ export default function MyEvents() {
                       </div>
 
                       <h3 className="font-bold text-2xl text-gray-900 leading-tight mb-6 line-clamp-2">
-                        {event.title}
+                        {pickLocalized(event, "title", locale)}
                       </h3>
 
                       <div className="space-y-4 text-sm text-gray-700 mb-8">

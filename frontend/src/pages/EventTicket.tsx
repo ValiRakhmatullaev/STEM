@@ -3,7 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import QRCode from "react-qr-code";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/useAuth";
+import { useLanguage } from "../context/LanguageContext";
 import { apiFetch } from "../api";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   QrCode as QrIcon,
   Calendar,
@@ -18,6 +20,9 @@ import {
 type TicketData = {
   event_id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   date: string;
   time: string;
   location: string;
@@ -55,6 +60,7 @@ const GlassCard = ({ children, className = "", delay = 0 }: GlassCardProps) => (
 export default function EventTicket() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { locale } = useLanguage();
   const [ticket, setTicket] = useState<TicketData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -85,6 +91,9 @@ export default function EventTicket() {
         const t: TicketData = {
           event_id: found.id,
           title: found.title,
+          title_ru: found.title_ru,
+          title_uz: found.title_uz,
+          title_en: found.title_en,
           date: found.date,
           time: found.time,
           location: found.location,
@@ -206,7 +215,7 @@ export default function EventTicket() {
               {/* Информация о мероприятии */}
               <div className="space-y-4 text-gray-700">
                 <h2 className="font-bold text-xl text-gray-900 line-clamp-2">
-                  {ticket.title}
+                  {pickLocalized(ticket, "title", locale)}
                 </h2>
 
                 <div className="flex items-center gap-2.5">

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "../context/useAuth";
 import { useLanguage } from "../context/LanguageContext";
 import { apiFetch } from "../api";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Calendar,
   Clock,
@@ -29,9 +30,15 @@ const TYPE_KEYS: Record<string, string> = {
 type EventDetailData = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   slug: string;
   event_type: string;
   description: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   date: string;
   time: string;
   duration_minutes: number;
@@ -424,6 +431,9 @@ export default function EventDetail() {
     );
   }
 
+  const eventTitle = pickLocalized(event, "title", locale);
+  const eventDescription = pickLocalized(event, "description", locale);
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden relative" style={{ perspective: "1000px" }}>
       {/* 3D Background Layer */}
@@ -464,7 +474,7 @@ export default function EventDetail() {
                 >
                   <img
                     src={event.banner_image}
-                    alt={event.title}
+                    alt={eventTitle}
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
@@ -484,7 +494,7 @@ export default function EventDetail() {
                   {t(`eventDetail.${TYPE_KEYS[event.event_type] || ""}`) || event.event_type}
                 </span>
                 <h1 className="font-bold text-3xl sm:text-4xl text-gray-900 leading-tight">
-                  {event.title}
+                  {eventTitle}
                 </h1>
               </motion.div>
 
@@ -628,14 +638,14 @@ export default function EventDetail() {
               )}
 
               {/* Описание */}
-              {event.description && (
+              {eventDescription && (
                 <motion.div variants={fadeInUp} className="mt-8 pt-6 border-t border-pink-100/40">
                   <h2 className="font-bold text-xl text-gray-900 mb-4 flex items-center gap-2.5">
                     <Sparkles className="w-5 h-5 text-pink-500" />
                     {t("eventDetail.description")}
                   </h2>
                   <div className="text-gray-700 leading-relaxed whitespace-pre-wrap text-[15px]">
-                    {event.description}
+                    {eventDescription}
                   </div>
                 </motion.div>
               )}

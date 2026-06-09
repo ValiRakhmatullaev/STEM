@@ -2,9 +2,18 @@ from django.db import models
 
 
 class HomeBanner(models.Model):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
+    title_ru = models.CharField("Title RU", max_length=255, blank=True)
+    title_uz = models.CharField("Title UZ", max_length=255, blank=True)
+    title_en = models.CharField("Title EN", max_length=255, blank=True)
     subtitle = models.TextField(blank=True)
+    subtitle_ru = models.TextField("Subtitle RU", blank=True)
+    subtitle_uz = models.TextField("Subtitle UZ", blank=True)
+    subtitle_en = models.TextField("Subtitle EN", blank=True)
     button_label = models.CharField(max_length=100, blank=True)
+    button_label_ru = models.CharField("Button label RU", max_length=100, blank=True)
+    button_label_uz = models.CharField("Button label UZ", max_length=100, blank=True)
+    button_label_en = models.CharField("Button label EN", max_length=100, blank=True)
     button_url = models.CharField(max_length=300, blank=True)
     image = models.ImageField(
         upload_to="home/banners/%Y/%m/",
@@ -24,7 +33,7 @@ class HomeBanner(models.Model):
         ordering = ("priority", "-created_at")
 
     def __str__(self) -> str:
-        return self.title
+        return self.title_ru or self.title or self.title_uz or self.title_en or str(self.pk)
 
 
 class NewsItem(models.Model):

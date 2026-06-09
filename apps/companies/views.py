@@ -27,6 +27,16 @@ validate_url = URLValidator(schemes=["http", "https"])
 SITE_PUBLISHER_NAME = "STEM Woman Uzbekistan"
 
 
+def _localized_company_fields(company):
+    description = company.description_ru or company.description or company.description_uz or company.description_en or ""
+    return {
+        "description": description,
+        "description_ru": company.description_ru or company.description or "",
+        "description_uz": company.description_uz or "",
+        "description_en": company.description_en or "",
+    }
+
+
 def _localized_job_fields(job):
     title = job.title_ru or job.title or job.title_uz or job.title_en or ""
     description = job.description_ru or job.description or job.description_uz or job.description_en or ""
@@ -108,7 +118,10 @@ def company_list(request):
             "size": c.size,
             "location": c.location,
             "is_verified": c.is_verified,
-            "description": (c.description or "")[:200],
+            **{
+                key: value[:200] if key.startswith("description") else value
+                for key, value in _localized_company_fields(c).items()
+            },
             "logo": c.logo.url if c.logo else None,
         }
         for c in page_items
@@ -214,7 +227,7 @@ def company_detail(request, pk):
         "size": company.size,
         "location": company.location,
         "is_verified": company.is_verified,
-        "description": company.description or "",
+        **_localized_company_fields(company),
         "website": company.website or "",
         "logo": company.logo.url if company.logo else None,
         "jobs": job_list_data,
@@ -366,7 +379,7 @@ def company_me(request):
             "location": c.location,
             "is_verified": c.is_verified,
             "is_approved_for_talents": c.is_approved_for_talents,
-            "description": c.description or "",
+            **_localized_company_fields(c),
             "website": c.website or "",
             "logo": c.logo.url if c.logo else None,
         },

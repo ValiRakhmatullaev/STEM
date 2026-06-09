@@ -62,6 +62,9 @@ class Company(TimeStampedModel):
         null=True,
     )
     description = models.TextField(blank=True)
+    description_ru = models.TextField("Description RU", blank=True)
+    description_uz = models.TextField("Description UZ", blank=True)
+    description_en = models.TextField("Description EN", blank=True)
     website = models.URLField(blank=True)
     industry = models.CharField(
         max_length=20,

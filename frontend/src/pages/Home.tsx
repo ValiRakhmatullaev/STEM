@@ -331,8 +331,17 @@ type FairItem = {
 };
 type HomeBanner = {
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   subtitle: string;
+  subtitle_ru?: string;
+  subtitle_uz?: string;
+  subtitle_en?: string;
   button_label?: string;
+  button_label_ru?: string;
+  button_label_uz?: string;
+  button_label_en?: string;
   button_url?: string;
   image?: string | null;
 };
@@ -359,6 +368,9 @@ export default function Home() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const joinUrl = user ? "/events" : banner?.button_url || "/register";
+  const bannerTitle = pickLocalized(banner, "title", locale);
+  const bannerSubtitle = pickLocalized(banner, "subtitle", locale);
+  const bannerButtonLabel = pickLocalized(banner, "button_label", locale);
 
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
@@ -513,10 +525,14 @@ export default function Home() {
                 className="font-display font-bold text-5xl sm:text-6xl lg:text-7xl text-gray-900 leading-[1.1] tracking-tight drop-shadow-sm"
                 style={{ transform: "translateZ(50px)" }}
               >
-                {t("home.hero.titlePrefix")}{" "}
-                <span className="bg-gradient-to-r from-pink-500 via-rose-500 to-purple-400 bg-clip-text text-transparent drop-shadow-lg">
-                  {t("home.hero.country")}
-                </span>
+                {bannerTitle || (
+                  <>
+                    {t("home.hero.titlePrefix")}{" "}
+                    <span className="bg-gradient-to-r from-pink-500 via-rose-500 to-purple-400 bg-clip-text text-transparent drop-shadow-lg">
+                      {t("home.hero.country")}
+                    </span>
+                  </>
+                )}
               </motion.h1>
 
               <motion.p
@@ -524,12 +540,12 @@ export default function Home() {
                 className="mt-6 text-xl text-gray-700 max-w-2xl leading-relaxed backdrop-blur-sm"
                 style={{ transform: "translateZ(30px)" }}
               >
-                {t("home.hero.subtitleFallback")}
+                {bannerSubtitle || t("home.hero.subtitleFallback")}
               </motion.p>
 
               <motion.div variants={fadeInUp} className="mt-10 flex flex-wrap gap-4" style={{ transform: "translateZ(40px)" }}>
                 <GradientButton to={joinUrl}>
-                  {t("home.hero.join")}
+                  {bannerButtonLabel || t("home.hero.join")}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </GradientButton>
                 <GradientButton to="/events" variant="secondary">

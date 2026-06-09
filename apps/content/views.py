@@ -8,6 +8,25 @@ from apps.common.utils import paginate_queryset
 from .models import HomeBanner, NewsItem
 
 
+def _banner_payload(banner: HomeBanner) -> dict:
+    return {
+        "title": banner.title_ru or banner.title or banner.title_uz or banner.title_en or "",
+        "title_ru": banner.title_ru or banner.title or "",
+        "title_uz": banner.title_uz or "",
+        "title_en": banner.title_en or "",
+        "subtitle": banner.subtitle_ru or banner.subtitle or banner.subtitle_uz or banner.subtitle_en or "",
+        "subtitle_ru": banner.subtitle_ru or banner.subtitle or "",
+        "subtitle_uz": banner.subtitle_uz or "",
+        "subtitle_en": banner.subtitle_en or "",
+        "button_label": banner.button_label_ru or banner.button_label or banner.button_label_uz or banner.button_label_en or "",
+        "button_label_ru": banner.button_label_ru or banner.button_label or "",
+        "button_label_uz": banner.button_label_uz or "",
+        "button_label_en": banner.button_label_en or "",
+        "button_url": banner.button_url,
+        "image": banner.image.url if banner.image else None,
+    }
+
+
 def _news_payload(news):
     title = news.title_ru or news.title or news.title_uz or news.title_en or ""
     summary = news.summary_ru or news.summary or news.summary_uz or news.summary_en or ""
@@ -76,13 +95,7 @@ def home_content(request):
     )
     banner_data = None
     if banner:
-        banner_data = {
-            "title": banner.title,
-            "subtitle": banner.subtitle,
-            "button_label": banner.button_label,
-            "button_url": banner.button_url,
-            "image": banner.image.url if banner.image else None,
-        }
+        banner_data = _banner_payload(banner)
 
     news_qs = (
         NewsItem.objects.filter(is_published=True)

@@ -2,6 +2,8 @@ import { useEffect, useState, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../api";
+import { useLanguage } from "../context/LanguageContext";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Building2,
   MapPin,
@@ -238,11 +240,15 @@ type CompanyItem = {
   location: string;
   is_verified: boolean;
   description?: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   logo?: string | null;
   job_count?: number;
 };
 
 export default function Companies() {
+  const { locale } = useLanguage();
   const [companies, setCompanies] = useState<CompanyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -265,10 +271,11 @@ export default function Companies() {
 
   const filteredCompanies = companies.filter((c) => {
     const q = searchQuery.toLowerCase();
+    const description = pickLocalized(c, "description", locale);
     const matchesSearch =
       c.company_name.toLowerCase().includes(q) ||
       (c.location || "").toLowerCase().includes(q) ||
-      (c.description || "").toLowerCase().includes(q);
+      description.toLowerCase().includes(q);
     const matchesIndustry = selectedIndustry === "all" || c.industry === selectedIndustry;
     return matchesSearch && matchesIndustry;
   });
@@ -470,7 +477,7 @@ export default function Companies() {
                                 </motion.div>
                               </div>
                               <p className="mt-1 text-sm text-gray-600 line-clamp-2 leading-relaxed group-hover:text-gray-700 transition-colors">
-                                {company.description || "Современная технологическая компания"}
+                                {pickLocalized(company, "description", locale) || "Современная технологическая компания"}
                               </p>
                             </div>
                           </div>

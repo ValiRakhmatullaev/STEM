@@ -24,6 +24,42 @@ from .utils import sync_event_counters
 User = get_user_model()
 
 
+def _localized_event_fields(event: Event) -> dict:
+    title = event.title_ru or event.title or event.title_uz or event.title_en or ""
+    description = event.description_ru or event.description or event.description_uz or event.description_en or ""
+    return {
+        "title": title,
+        "title_ru": event.title_ru or event.title or "",
+        "title_uz": event.title_uz or "",
+        "title_en": event.title_en or "",
+        "description": description,
+        "description_ru": event.description_ru or event.description or "",
+        "description_uz": event.description_uz or "",
+        "description_en": event.description_en or "",
+    }
+
+
+def _event_list_payload(event: Event) -> dict:
+    localized = _localized_event_fields(event)
+    return {
+        "id": event.pk,
+        **localized,
+        "description": localized["description"][:200],
+        "description_ru": localized["description_ru"][:200],
+        "description_uz": localized["description_uz"][:200],
+        "description_en": localized["description_en"][:200],
+        "slug": event.slug,
+        "event_type": event.event_type,
+        "date": event.date.isoformat(),
+        "time": event.time.strftime("%H:%M"),
+        "location": event.location or "",
+        "is_online": event.is_online,
+        "registered_count": event.registered_count,
+        "capacity": event.capacity,
+        "banner_image": event.banner_image.url if event.banner_image else None,
+    }
+
+
 def _build_checkin_url(request, token: str) -> str:
     path = reverse("event-checkin", args=[token])
     public_base = getattr(settings, "CHECKIN_PUBLIC_BASE_URL", "").strip()
@@ -47,12 +83,12 @@ def event_detail(request, pk):
 
     sync_event_counters(event)
 
+    localized = _localized_event_fields(event)
     data = {
         "id": event.pk,
-        "title": event.title,
+        **localized,
         "slug": event.slug,
         "event_type": event.event_type,
-        "description": event.description or "",
         "date": event.date.isoformat(),
         "time": event.time.strftime("%H:%M"),
         "duration_minutes": event.duration_minutes,
@@ -79,20 +115,7 @@ def event_list(request):
     page_items, meta = paginate_queryset(request, events, per_page=50)
 
     data = [
-        {
-            "id": e.pk,
-            "title": e.title,
-            "slug": e.slug,
-            "event_type": e.event_type,
-            "date": e.date.isoformat(),
-            "time": e.time.strftime("%H:%M"),
-            "location": e.location or "",
-            "is_online": e.is_online,
-            "registered_count": e.registered_count,
-            "capacity": e.capacity,
-            "description": (e.description or "")[:200],
-            "banner_image": e.banner_image.url if e.banner_image else None,
-        }
+        _event_list_payload(e)
         for e in page_items
     ]
 
@@ -356,7 +379,7 @@ def my_registrations(request):
 
         data.append({
             "id": e.pk,
-            "title": e.title,
+            **_localized_event_fields(e),
             "event_type": e.event_type,
             "date": e.date.isoformat(),
             "time": e.time.strftime("%H:%M"),

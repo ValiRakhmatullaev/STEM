@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { apiFetch } from "../api";
 import { useLanguage } from "../context/LanguageContext";
+import { pickLocalized } from "../utils/localizedContent";
 import {
   Calendar,
   Clock,
@@ -24,6 +25,9 @@ const TYPE_KEYS: Record<string, string> = {
 type EventItem = {
   id: number;
   title: string;
+  title_ru?: string;
+  title_uz?: string;
+  title_en?: string;
   slug: string;
   event_type: string;
   date: string;
@@ -33,6 +37,9 @@ type EventItem = {
   registered_count: number;
   capacity: number;
   description?: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   banner_image?: string | null;
 };
 
@@ -243,7 +250,7 @@ const GlassCard = ({ children, className = "", delay = 0 }: { children: ReactNod
 );
 
 export default function Events() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -401,7 +408,7 @@ export default function Events() {
                       <div className="relative h-48 overflow-hidden rounded-t-2xl">
                         <img
                           src={event.banner_image}
-                          alt={event.title}
+                          alt={pickLocalized(event, "title", locale)}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
@@ -418,7 +425,7 @@ export default function Events() {
 
                       {/* Заголовок */}
                       <h3 className="font-bold text-xl text-gray-900 group-hover:text-pink-600 transition-colors mb-4 line-clamp-2 leading-tight">
-                        {event.title}
+                        {pickLocalized(event, "title", locale)}
                       </h3>
 
                       {/* Дата */}

@@ -28,9 +28,15 @@ class RegistrationStatus(models.TextChoices):
 
 
 class Event(TimeStampedModel):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
+    title_ru = models.CharField("Title RU", max_length=255, blank=True)
+    title_uz = models.CharField("Title UZ", max_length=255, blank=True)
+    title_en = models.CharField("Title EN", max_length=255, blank=True)
     slug = models.SlugField(unique=True, max_length=255)
-    description = models.TextField()
+    description = models.TextField(blank=True)
+    description_ru = models.TextField("Description RU", blank=True)
+    description_uz = models.TextField("Description UZ", blank=True)
+    description_en = models.TextField("Description EN", blank=True)
     event_type = models.CharField(
         max_length=20,
         choices=EventType.choices,
@@ -67,7 +73,7 @@ class Event(TimeStampedModel):
         ]
 
     def __str__(self) -> str:
-        return self.title
+        return self.title_ru or self.title or self.title_uz or self.title_en or str(self.pk)
 
     def get_absolute_url(self) -> str:
         return reverse("events:event-detail", kwargs={"slug": self.slug})
@@ -82,6 +88,8 @@ class Event(TimeStampedModel):
                 raise ValidationError({"date": "Event date must be today or in the future."})
             if self.date == now.date() and self.time <= now.time():
                 raise ValidationError({"time": "Event time must be in the future when date is today."})
+        if not (self.title or self.title_ru or self.title_uz or self.title_en):
+            raise ValidationError({"title_ru": "At least one title language must be provided."})
         super().clean()
 
 

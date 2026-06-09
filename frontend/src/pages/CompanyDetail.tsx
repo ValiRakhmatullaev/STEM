@@ -83,6 +83,9 @@ type CompanyDetailData = {
   location: string;
   is_verified: boolean;
   description: string;
+  description_ru?: string;
+  description_uz?: string;
+  description_en?: string;
   website: string;
   logo: string | null;
   founded_year?: number;
@@ -368,6 +371,8 @@ export default function CompanyDetail() {
     );
   }
 
+  const companyDescription = pickLocalized(company, "description", locale);
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden relative" style={{ perspective: "1000px" }}>
       {/* 3D Background Layer */}
@@ -486,14 +491,14 @@ export default function CompanyDetail() {
               </div>
 
               {/* Описание компании */}
-              {company.description && (
+              {companyDescription && (
                 <motion.div variants={fadeInUp} className="mt-10 pt-8 border-t border-pink-100/40">
                   <h2 className="font-bold text-2xl text-gray-900 mb-4 flex items-center gap-2.5">
                     <Sparkles className="w-5 h-5 text-pink-500" />
                     О компании
                   </h2>
                   <div className="text-gray-700 leading-relaxed whitespace-pre-wrap text-[15px]">
-                    {company.description}
+                    {companyDescription}
                   </div>
                 </motion.div>
               )}

@@ -6,6 +6,47 @@ from .models import Company, CompanyUser, JobPosting
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ("company_name", "slug", "industry", "size", "is_verified", "created_at")
+    search_fields = (
+        "company_name",
+        "description",
+        "description_ru",
+        "description_uz",
+        "description_en",
+        "website",
+        "location",
+    )
+    prepopulated_fields = {"slug": ("company_name",)}
+    fieldsets = (
+        ("Company", {
+            "fields": ("company_name", "slug", "logo", "website", "industry", "size", "location"),
+        }),
+        ("Russian", {
+            "fields": ("description_ru",),
+        }),
+        ("Uzbek", {
+            "fields": ("description_uz",),
+        }),
+        ("English", {
+            "fields": ("description_en",),
+        }),
+        ("Moderation", {
+            "fields": (
+                "is_verified",
+                "verified_by",
+                "verified_at",
+                "is_approved_for_talents",
+                "approved_for_talents_at",
+            ),
+        }),
+        ("Legacy fallback", {
+            "fields": ("description",),
+            "classes": ("collapse",),
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        obj.description = obj.description_ru or obj.description or obj.description_uz or obj.description_en
+        super().save_model(request, obj, form, change)
 
 
 class CompanyUserInline(admin.TabularInline):
