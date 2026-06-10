@@ -134,6 +134,15 @@ class EventRegistration(models.Model):
         verbose_name="Подтверждено организатором",
         help_text="Организатор или администратор подтвердил участие.",
     )
+    email_confirmation_token = models.CharField(
+        max_length=64,
+        unique=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text="Token used to confirm this event registration by email.",
+    )
+    confirmation_email_sent_at = models.DateTimeField(null=True, blank=True)
+    email_confirmed_at = models.DateTimeField(null=True, blank=True)
     qr_token = models.CharField(
         max_length=64,
         unique=True,

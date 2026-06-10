@@ -18,7 +18,13 @@ from apps.common.audit import record_audit_event
 from apps.common.utils import paginate_queryset
 from .models import Event, EventRegistration
 from .models import RegistrationStatus
-from .services import cancel_event_registration, check_in_registration, register_user_for_event
+from .services import (
+    cancel_event_registration,
+    check_in_registration,
+    confirm_registration_by_email_token,
+    register_user_for_event,
+    send_registration_confirmation_email,
+)
 from .utils import sync_event_counters
 
 User = get_user_model()
@@ -451,20 +457,39 @@ def event_register(request, pk):
     if request.method == "POST":
 
         if reg and reg.status == RegistrationStatus.REGISTERED:
+            if not reg.organizer_confirmed:
+                email_sent = send_registration_confirmation_email(request=request, registration=reg)
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "registered": True,
+                        "is_waitlist": reg.is_waitlist,
+                        "organizer_confirmed": reg.organizer_confirmed,
+                        "confirmation_required": True,
+                        "confirmation_email_sent": email_sent,
+                    }
+                )
             return JsonResponse(
                 {"error": "Вы уже записаны."},
                 status=409,
             )
 
+        if not (request.user.email or "").strip():
+            return JsonResponse(
+                {"error": "Email is required to confirm event registration."},
+                status=400,
+            )
+
         result = register_user_for_event(event_id=event.pk, user=request.user)
         reg = result.registration
         is_waitlist = result.is_waitlist
+        email_sent = send_registration_confirmation_email(request=request, registration=reg)
         record_audit_event(
             request,
             "event.register",
             target_type="event",
             target_id=event.pk,
-            metadata={"registration_id": reg.pk, "is_waitlist": is_waitlist},
+            metadata={"registration_id": reg.pk, "is_waitlist": is_waitlist, "confirmation_email_sent": email_sent},
         )
         if result.created:
             try:
@@ -488,7 +513,13 @@ def event_register(request, pk):
             pass
 
         return JsonResponse(
-            {"success": True, "is_waitlist": is_waitlist},
+            {
+                "success": True,
+                "is_waitlist": is_waitlist,
+                "organizer_confirmed": reg.organizer_confirmed,
+                "confirmation_required": not reg.organizer_confirmed,
+                "confirmation_email_sent": email_sent,
+            },
             status=201,
         )
 
@@ -505,3 +536,46 @@ def event_register(request, pk):
         record_audit_event(request, "event.cancel_registration", target_type="event", target_id=event.pk)
 
         return JsonResponse({"success": True})
+
+
+@require_GET
+def event_registration_confirm(request, token: str):
+    registration = confirm_registration_by_email_token(token=token)
+    if registration is None:
+        return HttpResponse(
+            """
+            <html><head><meta charset="utf-8"><title>Invalid confirmation link</title></head>
+            <body style="font-family:system-ui;padding:40px">
+              <h1>Invalid confirmation link</h1>
+              <p>This registration confirmation link is invalid.</p>
+            </body></html>
+            """,
+            status=404,
+        )
+
+    event_url = f"/events/{registration.event_id}"
+    if registration.status != RegistrationStatus.REGISTERED:
+        title = "Registration is not active"
+        message = "This event registration was cancelled or is no longer active."
+    else:
+        title = "Registration confirmed"
+        message = "Your event registration has been confirmed. You can return to the event page and open your ticket."
+
+    return HttpResponse(
+        f"""
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>{escape(title)}</title>
+        </head>
+        <body style="font-family:system-ui;background:#fff7fb;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
+          <main style="background:white;max-width:520px;padding:32px;border-radius:18px;border:1px solid #fbcfe8;box-shadow:0 20px 50px rgba(236,72,153,.12);text-align:center">
+            <h1 style="margin-top:0;color:#111827">{escape(title)}</h1>
+            <p style="color:#4b5563;line-height:1.6">{escape(message)}</p>
+            <a href="{escape(event_url)}" style="display:inline-block;margin-top:16px;padding:12px 18px;border-radius:12px;background:#ec4899;color:white;text-decoration:none;font-weight:700">Open event</a>
+          </main>
+        </body>
+        </html>
+        """
+    )

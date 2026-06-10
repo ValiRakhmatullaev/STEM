@@ -3,8 +3,11 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db import IntegrityError, transaction
 from django.db.models import F
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.events.models import Event, EventRegistration, RegistrationStatus
@@ -66,6 +69,86 @@ def register_user_for_event(*, event_id: int, user) -> RegistrationResult:
 
         _sync_locked_event_counters(event)
         return RegistrationResult(registration=reg, created=created, is_waitlist=is_waitlist)
+
+
+def build_registration_confirmation_url(request, registration: EventRegistration) -> str:
+    path = reverse("event-registration-confirm", args=[registration.email_confirmation_token])
+    public_base = getattr(settings, "SITE_PUBLIC_BASE_URL", "").strip()
+    if public_base:
+        return public_base.rstrip("/") + path
+    return request.build_absolute_uri(path)
+
+
+def send_registration_confirmation_email(*, request, registration: EventRegistration) -> bool:
+    registration = (
+        EventRegistration.objects.select_related("event", "user")
+        .get(pk=registration.pk)
+    )
+    recipient = (registration.user.email or "").strip()
+    if not recipient:
+        logger.warning("event_registration_confirmation_email_missing_recipient", extra={"registration_id": registration.pk})
+        return False
+
+    event_title = str(registration.event)
+    confirm_url = build_registration_confirmation_url(request, registration)
+    subject = f"Confirm your registration: {event_title}"
+    message = (
+        f"Hello, {registration.user.display_name}!\n\n"
+        f"Please confirm your registration for \"{event_title}\" by opening this link:\n"
+        f"{confirm_url}\n\n"
+        "If you did not request this registration, you can ignore this email.\n\n"
+        "STEM Woman Uzbekistan"
+    )
+
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+            recipient_list=[recipient],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception(
+            "event_registration_confirmation_email_failed",
+            extra={"registration_id": registration.pk, "event_id": registration.event_id, "user_id": registration.user_id},
+        )
+        return False
+
+    registration.confirmation_email_sent_at = timezone.now()
+    registration.save(update_fields=["confirmation_email_sent_at"])
+    logger.info(
+        "event_registration_confirmation_email_sent",
+        extra={"registration_id": registration.pk, "event_id": registration.event_id, "user_id": registration.user_id},
+    )
+    return True
+
+
+def confirm_registration_by_email_token(*, token: str) -> EventRegistration | None:
+    token = (token or "").strip()
+    if not token:
+        return None
+
+    with transaction.atomic():
+        registration = (
+            EventRegistration.objects.select_for_update()
+            .select_related("event", "user")
+            .filter(email_confirmation_token=token)
+            .first()
+        )
+        if registration is None or registration.status != RegistrationStatus.REGISTERED:
+            return registration
+        now = timezone.now()
+        update_fields = []
+        if not registration.organizer_confirmed:
+            registration.organizer_confirmed = True
+            update_fields.append("organizer_confirmed")
+        if registration.email_confirmed_at is None:
+            registration.email_confirmed_at = now
+            update_fields.append("email_confirmed_at")
+        if update_fields:
+            registration.save(update_fields=update_fields)
+        return registration
 
 
 def cancel_event_registration(*, event_id: int, user) -> bool:

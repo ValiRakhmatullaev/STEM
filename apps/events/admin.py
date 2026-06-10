@@ -70,12 +70,20 @@ class EventRegistrationAdmin(admin.ModelAdmin):
         "status",
         "is_waitlist",
         "organizer_confirmed",
+        "email_confirmed_at",
         "visits_count",
         "registered_at",
     )
     list_filter = ("event", "status", "is_waitlist", "organizer_confirmed")
     search_fields = ("user__username", "event__title", "qr_token")
-    readonly_fields = ("qr_token", "visits_count", "last_visit_at")
+    readonly_fields = (
+        "email_confirmation_token",
+        "confirmation_email_sent_at",
+        "email_confirmed_at",
+        "qr_token",
+        "visits_count",
+        "last_visit_at",
+    )
     actions = ["confirm_selected"]
 
     @admin.action(description="Подтвердить выбранные")
