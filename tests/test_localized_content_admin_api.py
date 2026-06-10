@@ -97,6 +97,28 @@ def test_event_api_allows_manual_organizer_without_user():
 
 
 @pytest.mark.django_db
+def test_event_api_formats_multiple_manual_organizers():
+    event = Event.objects.create(
+        title_ru="Multiple organizers event",
+        slug="multiple-organizers-event",
+        description_ru="Description",
+        event_type=EventType.MEETUP,
+        date=timezone.now().date() + timedelta(days=7),
+        time="12:00",
+        duration_minutes=60,
+        capacity=20,
+        organizer_name="STEM Woman Uzbekistan\nIT Park\nExternal Partner",
+        is_published=True,
+    )
+
+    from django.test import Client
+
+    detail_response = Client().get(f"/api/events/{event.pk}/")
+    assert detail_response.status_code == 200
+    assert detail_response.json()["organizer"] == "STEM Woman Uzbekistan, IT Park, External Partner"
+
+
+@pytest.mark.django_db
 def test_my_events_api_exposes_all_language_fields():
     User = get_user_model()
     organizer = User.objects.create_user(username="org", email="org-myevents@test.invalid", password="pw")

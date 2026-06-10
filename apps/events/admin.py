@@ -47,11 +47,16 @@ class EventAdmin(admin.ModelAdmin):
 
     @admin.display(description="Organizer")
     def public_organizer(self, obj):
-        return obj.organizer_name or (obj.organizer.username if obj.organizer_id else "")
+        return obj.organizer_display_name
 
     def save_model(self, request, obj, form, change):
         obj.title = obj.title_ru or obj.title or obj.title_uz or obj.title_en
         obj.description = obj.description_ru or obj.description or obj.description_uz or obj.description_en
+        obj.organizer_name = "\n".join(
+            name.strip()
+            for name in obj.organizer_name.replace(",", "\n").splitlines()
+            if name.strip()
+        )
         if not obj.organizer_name and obj.organizer_id:
             obj.organizer_name = obj.organizer.username
         super().save_model(request, obj, form, change)

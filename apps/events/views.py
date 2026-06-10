@@ -40,9 +40,7 @@ def _localized_event_fields(event: Event) -> dict:
 
 
 def _event_organizer_name(event: Event) -> str:
-    if event.organizer_name:
-        return event.organizer_name
-    return event.organizer.username if event.organizer_id else ""
+    return event.organizer_display_name
 
 
 def _event_list_payload(event: Event) -> dict:

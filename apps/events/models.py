@@ -63,10 +63,9 @@ class Event(TimeStampedModel):
         blank=True,
         null=True,
     )
-    organizer_name = models.CharField(
-        max_length=255,
+    organizer_name = models.TextField(
         blank=True,
-        help_text="Public organizer name shown on the website. If empty, the linked organizer username is used.",
+        help_text="Public organizer names shown on the website. Add one organizer per line. If empty, the linked organizer username is used.",
     )
     is_published = models.BooleanField(default=False, db_index=True)
 
@@ -84,6 +83,17 @@ class Event(TimeStampedModel):
 
     def get_absolute_url(self) -> str:
         return reverse("events:event-detail", kwargs={"slug": self.slug})
+
+    @property
+    def organizer_display_name(self) -> str:
+        names = [
+            name.strip()
+            for name in self.organizer_name.replace(",", "\n").splitlines()
+            if name.strip()
+        ]
+        if names:
+            return ", ".join(names)
+        return self.organizer.username if self.organizer_id else ""
 
     def clean(self) -> None:
         from django.core.exceptions import ValidationError
