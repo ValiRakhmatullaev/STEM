@@ -39,6 +39,12 @@ def _localized_event_fields(event: Event) -> dict:
     }
 
 
+def _event_organizer_name(event: Event) -> str:
+    if event.organizer_name:
+        return event.organizer_name
+    return event.organizer.username if event.organizer_id else ""
+
+
 def _event_list_payload(event: Event) -> dict:
     localized = _localized_event_fields(event)
     return {
@@ -57,6 +63,7 @@ def _event_list_payload(event: Event) -> dict:
         "registered_count": event.registered_count,
         "capacity": event.capacity,
         "banner_image": event.banner_image.url if event.banner_image else None,
+        "organizer": _event_organizer_name(event),
     }
 
 
@@ -99,7 +106,7 @@ def event_detail(request, pk):
         "registered_count": event.registered_count,
         "waitlist_count": event.waitlist_count,
         "banner_image": event.banner_image.url if event.banner_image else None,
-        "organizer": event.organizer.username if event.organizer_id else "",
+        "organizer": _event_organizer_name(event),
     }
 
     return JsonResponse(data)

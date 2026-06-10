@@ -61,6 +61,11 @@ class Event(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="organized_events",
     )
+    organizer_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Public organizer name shown on the website. If empty, the linked organizer username is used.",
+    )
     is_published = models.BooleanField(default=False, db_index=True)
 
     class Meta:
