@@ -60,6 +60,8 @@ class Event(TimeStampedModel):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="organized_events",
+        blank=True,
+        null=True,
     )
     organizer_name = models.CharField(
         max_length=255,
@@ -95,6 +97,8 @@ class Event(TimeStampedModel):
                 raise ValidationError({"time": "Event time must be in the future when date is today."})
         if not (self.title or self.title_ru or self.title_uz or self.title_en):
             raise ValidationError({"title_ru": "At least one title language must be provided."})
+        if not (self.organizer_name or self.organizer_id):
+            raise ValidationError({"organizer_name": "Enter organizer name or choose an internal organizer."})
         super().clean()
 
 
