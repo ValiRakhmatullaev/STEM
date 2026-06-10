@@ -18,6 +18,7 @@ def _create_event() -> Event:
         date=timezone.now().date() + timedelta(days=7),
         time="12:00",
         duration_minutes=60,
+        location="British Management University",
         capacity=20,
         organizer_name="STEM Woman Uzbekistan",
         is_published=True,
@@ -47,6 +48,11 @@ def test_event_registration_sends_email_confirmation_link():
     assert registration.email_confirmed_at is None
     assert registration.confirmation_email_sent_at is not None
     assert len(mail.outbox) == 1
+    assert mail.outbox[0].subject == "You’re In! Confirm Your Spot for “Email confirmation event” 🚀"
+    assert "Hello, participant!" in mail.outbox[0].body
+    assert "Date:" in mail.outbox[0].body
+    assert "Time: 12:00 PM" in mail.outbox[0].body
+    assert "Venue: British Management University" in mail.outbox[0].body
     assert f"/api/events/confirm-registration/{registration.email_confirmation_token}/" in mail.outbox[0].body
 
 

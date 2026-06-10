@@ -91,13 +91,28 @@ def send_registration_confirmation_email(*, request, registration: EventRegistra
 
     event_title = str(registration.event)
     confirm_url = build_registration_confirmation_url(request, registration)
-    subject = f"Confirm your registration: {event_title}"
+    event_date = registration.event.date.strftime("%d %B %Y")
+    event_time = registration.event.time.strftime("%I:%M %p")
+    event_venue = "Online" if registration.event.is_online else (registration.event.location or "To be announced")
+    participant_name = registration.user.display_name or registration.user.get_full_name() or registration.user.username
+    subject = f"You’re In! Confirm Your Spot for “{event_title}” 🚀"
     message = (
-        f"Hello, {registration.user.display_name}!\n\n"
-        f"Please confirm your registration for \"{event_title}\" by opening this link:\n"
-        f"{confirm_url}\n\n"
+        f"You’re In! Confirm Your Spot for “{event_title}” 🚀\n\n"
+        f"Hello, {participant_name}!\n\n"
+        f"We’re excited to welcome you to “{event_title}” — a powerful gathering of innovators, "
+        "leaders, and changemakers shaping the future of AI and STEM.\n\n"
+        "To secure your place, please confirm your registration by clicking the link below:\n\n"
+        f"👉 {confirm_url}\n\n"
+        "📅 Event Details:\n"
+        f"Date: {event_date}\n"
+        f"Time: {event_time}\n"
+        f"Venue: {event_venue}\n\n"
+        "Once confirmed, you’ll officially join a growing community empowering women and professionals "
+        "in STEM and AI.\n\n"
         "If you did not request this registration, you can ignore this email.\n\n"
-        "STEM Woman Uzbekistan"
+        "We look forward to seeing you there!\n\n"
+        "Warm regards,\n"
+        "STEM Woman Team 💫"
     )
 
     try:
