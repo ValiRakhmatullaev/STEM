@@ -29,6 +29,11 @@ class CareerFair(TimeStampedModel):
         blank=True,
         null=True,
     )
+    external_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="Optional external URL for this opportunity.",
+    )
     is_active = models.BooleanField(default=True, db_index=True)
     max_companies = models.PositiveIntegerField()
     registered_companies_count = models.PositiveIntegerField(default=0)

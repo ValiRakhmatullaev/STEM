@@ -23,6 +23,7 @@ def _career_fair_payload(fair: CareerFair) -> dict:
         "date_start": fair.date_start.isoformat(),
         "date_end": fair.date_end.isoformat(),
         "location": fair.location,
+        "external_url": fair.external_url,
         "banner_image": fair.banner_image.url if fair.banner_image else None,
         "registered_companies_count": fair.registered_companies_count,
         "max_companies": fair.max_companies,

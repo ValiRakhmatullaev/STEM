@@ -4,12 +4,12 @@ from .models import CareerFair, CareerFairCompany, CareerFairRegistration
 
 @admin.register(CareerFair)
 class CareerFairAdmin(admin.ModelAdmin):
-    list_display = ("display_title", "date_start", "date_end", "is_active", "registered_companies_count", "max_companies")
+    list_display = ("display_title", "date_start", "date_end", "has_external_url", "is_active", "registered_companies_count", "max_companies")
     list_filter = ("is_active", "date_start")
-    search_fields = ("title", "title_ru", "title_uz", "title_en", "location")
+    search_fields = ("title", "title_ru", "title_uz", "title_en", "location", "external_url")
     prepopulated_fields = {"slug": ("title_ru",)}
     fieldsets = (
-        ("Main", {"fields": ("slug", "location", "date_start", "date_end")}),
+        ("Main", {"fields": ("slug", "location", "date_start", "date_end", "external_url")}),
         ("Russian", {"fields": ("title_ru", "description_ru")}),
         ("Uzbek", {"fields": ("title_uz", "description_uz")}),
         ("English", {"fields": ("title_en", "description_en")}),
@@ -21,6 +21,10 @@ class CareerFairAdmin(admin.ModelAdmin):
     @admin.display(description="Opportunity")
     def display_title(self, obj: CareerFair) -> str:
         return str(obj)
+
+    @admin.display(boolean=True, description="External link")
+    def has_external_url(self, obj: CareerFair) -> bool:
+        return bool(obj.external_url)
 
     def save_model(self, request, obj, form, change):
         obj.title = obj.title_ru or obj.title or obj.title_uz or obj.title_en

@@ -69,6 +69,7 @@ export const TRANSLATIONS: Record<
       emptySubtitle: "Следите за обновлениями сообщества — скоро появятся новые события",
       details: "Подробнее о возможности",
       companiesLabel: "Компаний",
+      openExternal: "Открыть возможность",
     },
     myEvents: {
       title: "Мои мероприятия",
@@ -462,6 +463,7 @@ export const TRANSLATIONS: Record<
       emptySubtitle: "Hamjamiyat yangiliklarini kuzating — tez orada yangi tadbirlar bo'ladi",
       details: "Imkoniyat haqida",
       companiesLabel: "Kompaniyalar",
+      openExternal: "Imkoniyatni ochish",
     },
     myEvents: {
       title: "Mening tadbirlarim",
@@ -856,6 +858,7 @@ export const TRANSLATIONS: Record<
       emptySubtitle: "Stay tuned — new events will be announced soon",
       details: "Opportunity details",
       companiesLabel: "Companies",
+      openExternal: "Open opportunity",
     },
     myEvents: {
       title: "My events",

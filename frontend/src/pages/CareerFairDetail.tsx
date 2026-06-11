@@ -11,6 +11,7 @@ import {
   Users,
   Sparkles,
   Building2,
+  ExternalLink,
 } from "lucide-react";
 import { useScroll, useTransform } from "framer-motion";
 
@@ -203,6 +204,29 @@ const GradientButton = ({ to, children, variant = "primary", className = "" }: {
   );
 };
 
+const ExternalGradientButton = ({ href, children, className = "" }: {
+  href: string;
+  children: React.ReactNode;
+  className?: string
+}) => (
+  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`group relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium overflow-hidden transition-all duration-300 text-sm bg-gradient-to-r from-pink-400 via-rose-400 to-purple-300 text-white shadow-md shadow-pink-400/25 hover:shadow-pink-500/40 ${className}`}
+    >
+      <span className="relative z-10 flex items-center gap-2">{children}</span>
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-purple-300 via-pink-400 to-rose-400 opacity-0 group-hover:opacity-100"
+        initial={{ x: "100%" }}
+        whileHover={{ x: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      />
+    </a>
+  </motion.div>
+);
+
 type CareerFairDetailData = {
   id: number;
   title: string;
@@ -217,6 +241,7 @@ type CareerFairDetailData = {
   date_start: string;
   date_end: string;
   location: string;
+  external_url?: string;
   banner_image: string | null;
   registered_companies_count: number;
   max_companies: number;
@@ -238,7 +263,7 @@ function formatDate(iso: string, locale: "ru" | "uz" | "en"): string {
 }
 
 export default function CareerFairDetail() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const [fair, setFair] = useState<CareerFairDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -449,9 +474,16 @@ export default function CareerFairDetail() {
 
                 {/* Кнопки действий */}
                 <motion.div variants={fadeInUp} className="flex flex-wrap gap-3">
+                  {fair.external_url && (
+                    <ExternalGradientButton href={fair.external_url}>
+                      <ExternalLink className="w-4 h-4" />
+                      {t("careerFairs.openExternal")}
+                    </ExternalGradientButton>
+                  )}
+
                   <GradientButton to="/companies">
                     <Users className="w-4 h-4" />
-                    Компании
+                    {t("nav.companies")}
                   </GradientButton>
 
                   <GradientButton to="/jobs" variant="secondary">
