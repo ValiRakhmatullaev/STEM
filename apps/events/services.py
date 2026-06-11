@@ -140,15 +140,19 @@ def send_registration_confirmation_email(*, request, registration: EventRegistra
 
 
 def confirm_registration_by_email_token(*, token: str) -> EventRegistration | None:
-    token = (token or "").strip()
+    token = (token or "").strip().rstrip("/")
     if not token:
         return None
+    token_candidates = {token}
+    without_dashes = token.replace("-", "")
+    if without_dashes:
+        token_candidates.add(without_dashes)
 
     with transaction.atomic():
         registration = (
             EventRegistration.objects.select_for_update()
             .select_related("event", "user")
-            .filter(email_confirmation_token=token)
+            .filter(email_confirmation_token__in=token_candidates)
             .first()
         )
         if registration is None or registration.status != RegistrationStatus.REGISTERED:

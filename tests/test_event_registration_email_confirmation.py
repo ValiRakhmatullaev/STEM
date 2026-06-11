@@ -1,4 +1,5 @@
 from datetime import timedelta
+from uuid import uuid4
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -65,6 +66,27 @@ def test_event_registration_confirmation_link_confirms_registration():
     registration = EventRegistration.objects.create(event=event, user=user)
 
     response = Client().get(f"/api/events/confirm-registration/{registration.email_confirmation_token}/")
+
+    assert response.status_code == 200
+    registration.refresh_from_db()
+    assert registration.organizer_confirmed is True
+    assert registration.email_confirmed_at is not None
+
+
+@pytest.mark.django_db
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+def test_event_registration_confirmation_link_accepts_uuid_with_dashes_for_hex_token():
+    User = get_user_model()
+    user = User.objects.create_user(username="participant", email="participant@test.invalid", password="pw")
+    event = _create_event()
+    token = uuid4()
+    registration = EventRegistration.objects.create(
+        event=event,
+        user=user,
+        email_confirmation_token=token.hex,
+    )
+
+    response = Client().get(f"/api/events/confirm-registration/{token}/")
 
     assert response.status_code == 200
     registration.refresh_from_db()
