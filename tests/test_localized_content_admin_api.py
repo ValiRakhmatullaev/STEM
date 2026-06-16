@@ -1,10 +1,13 @@
 from datetime import timedelta
 
 import pytest
+from django.contrib.admin.sites import AdminSite
 from django.contrib.auth import get_user_model
+from django.test import Client
 from django.utils import timezone
 
-from apps.content.models import HomeBanner
+from apps.content.models import HomeBanner, NewsItem
+from apps.events.admin import EventAdmin
 from apps.events.models import Event, EventRegistration, EventType
 from apps.companies.models import Company, CompanySize, Industry
 
@@ -29,8 +32,6 @@ def test_event_api_exposes_all_language_fields():
         organizer=organizer,
         is_published=True,
     )
-
-    from django.test import Client
 
     client = Client()
     list_response = client.get("/api/events/")
@@ -66,8 +67,6 @@ def test_event_api_prefers_manual_organizer_name():
         is_published=True,
     )
 
-    from django.test import Client
-
     detail_response = Client().get(f"/api/events/{event.pk}/")
     assert detail_response.status_code == 200
     assert detail_response.json()["organizer"] == "STEM Woman Uzbekistan"
@@ -87,8 +86,6 @@ def test_event_api_allows_manual_organizer_without_user():
         organizer_name="External Partner",
         is_published=True,
     )
-
-    from django.test import Client
 
     assert event.organizer_id is None
     detail_response = Client().get(f"/api/events/{event.pk}/")
@@ -110,8 +107,6 @@ def test_event_api_formats_multiple_manual_organizers():
         organizer_name="STEM Woman Uzbekistan\nIT Park\nExternal Partner",
         is_published=True,
     )
-
-    from django.test import Client
 
     detail_response = Client().get(f"/api/events/{event.pk}/")
     assert detail_response.status_code == 200
@@ -138,8 +133,6 @@ def test_my_events_api_exposes_all_language_fields():
         is_published=True,
     )
     EventRegistration.objects.create(user=participant, event=event, organizer_confirmed=True)
-
-    from django.test import Client
 
     client = Client()
     client.force_login(participant)
@@ -168,8 +161,6 @@ def test_home_banner_api_exposes_all_language_fields():
         priority=1,
     )
 
-    from django.test import Client
-
     response = Client().get("/api/home/")
     assert response.status_code == 200
     banner = response.json()["banner"]
@@ -193,8 +184,6 @@ def test_company_api_exposes_all_language_fields():
         location="Tashkent",
     )
 
-    from django.test import Client
-
     client = Client()
     list_response = client.get("/api/companies/")
     assert list_response.status_code == 200
@@ -209,3 +198,45 @@ def test_company_api_exposes_all_language_fields():
     assert detail["description_ru"] == "RU company description"
     assert detail["description_uz"] == "UZ company description"
     assert detail["description_en"] == "EN company description"
+
+
+@pytest.mark.django_db
+def test_home_news_endpoints_return_only_manual_news():
+    NewsItem.objects.create(
+        title_ru="Manual news",
+        slug="manual-news",
+        summary_ru="Manual summary",
+        content_ru="Manual content",
+        source_type=NewsItem.SourceType.MANUAL,
+        is_published=True,
+        published_at=timezone.now(),
+    )
+    NewsItem.objects.create(
+        title_ru="Auto event news",
+        slug="auto-event-news",
+        summary_ru="Auto summary",
+        content_ru="Auto content",
+        source_type=NewsItem.SourceType.EVENT,
+        source_id=123,
+        is_published=True,
+        published_at=timezone.now(),
+    )
+
+    client = Client()
+
+    news_response = client.get("/api/home/news/")
+    assert news_response.status_code == 200
+    assert [item["title_ru"] for item in news_response.json()["results"]] == ["Manual news"]
+
+    home_response = client.get("/api/home/")
+    assert home_response.status_code == 200
+    assert [item["title_ru"] for item in home_response.json()["news"]] == ["Manual news"]
+
+
+@pytest.mark.django_db
+def test_event_admin_allows_editing_capacity():
+    admin = EventAdmin(Event, AdminSite())
+    form = admin.get_form(request=None)()
+
+    assert "capacity" in form.fields
+    assert "capacity" not in admin.get_readonly_fields(request=None)

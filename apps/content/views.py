@@ -60,7 +60,10 @@ def news_list(request):
     Список опубликованных новостей (для страницы /news).
     """
     news_qs = (
-        NewsItem.objects.filter(is_published=True)
+        NewsItem.objects.filter(
+            is_published=True,
+            source_type=NewsItem.SourceType.MANUAL,
+        )
         .order_by("-published_at", "-created_at")
     )
     page_items, meta = paginate_queryset(request, news_qs, per_page=50)
@@ -74,7 +77,13 @@ def news_detail(request, pk):
     GET /api/home/news/<id>/
     Одна опубликованная новость по id (полный текст).
     """
-    news = get_object_or_404(NewsItem.objects.filter(is_published=True), pk=pk)
+    news = get_object_or_404(
+        NewsItem.objects.filter(
+            is_published=True,
+            source_type=NewsItem.SourceType.MANUAL,
+        ),
+        pk=pk,
+    )
     data = _news_payload(news)
     return JsonResponse(data)
 
@@ -100,7 +109,10 @@ def home_content(request):
         banner_data = _banner_payload(banner)
 
     news_qs = (
-        NewsItem.objects.filter(is_published=True)
+        NewsItem.objects.filter(
+            is_published=True,
+            source_type=NewsItem.SourceType.MANUAL,
+        )
         .order_by("-published_at", "-created_at")[:10]
     )
     news = [_news_payload(n) for n in news_qs]
